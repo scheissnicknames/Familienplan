@@ -17,7 +17,7 @@
     .card h3{margin:0 0 8px 6px;font-size:15px;color:#333}
 
     /* Grids */
-    .top-grid{display:grid;gap:12px;grid-template-columns: 1.2fr 1fr 1.4fr;align-items:stretch}
+    .top-grid{display:grid;gap:12px;grid-template-columns: 1fr 1fr;align-items:stretch}
     .mid-grid,.bottom-grid{display:grid;gap:12px;grid-template-columns: 1fr}
 
     /* Tabellen */
@@ -34,12 +34,7 @@
     .iframe-wrap{border:1px solid #eee;border-radius:10px;overflow:hidden}
     iframe{display:block;width:100%;border:0}
 
-    /* Tasks */
-    .task-item{display:flex;align-items:center;gap:6px;padding:4px}
-    .task-item .title{font-weight:600;font-size:13px}
-    .task-col{display:grid;gap:8px}
-
-    @media (max-width:1100px){.top-grid{grid-template-columns:1fr}}
+    @media (max-width:900px){.top-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -48,11 +43,10 @@
 
   <!-- ===== OBERER BEREICH ===== -->
   <div class="top-grid">
-    <!-- Spalte 1: HEUTE – Valentin: Stundenplan & Termine (nur heutige) -->
+    <!-- Spalte 1: HEUTE – Valentin: Stundenplan & Termine -->
     <section class="card">
       <h3>Heute · Valentin – Stundenplan & Termine</h3>
       <div style="display:grid;gap:6px;grid-template-rows:auto auto">
-        <!-- Stundenplan HEUTE -->
         <div class="iframe-wrap" style="padding:6px">
           <table>
             <thead>
@@ -61,7 +55,6 @@
             <tbody id="stundenplan-heute"></tbody>
           </table>
         </div>
-        <!-- Termine HEUTE (per Apps Script JSON) -->
         <div class="iframe-wrap" style="padding:6px">
           <div style="font-weight:600;margin:2px 0 6px 0">Termine · Heute</div>
           <ul id="valentin-today-list" style="list-style:none;margin:0;padding:0"></ul>
@@ -72,22 +65,10 @@
       </div>
     </section>
 
-    <!-- Spalte 2: Aufgaben – Heute (lokal, mit Datum) -->
-    <section class="card task-col">
-      <h3>Aufgaben · Heute</h3>
-      <form id="task-form" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">
-        <input id="task-title" placeholder="Neue Aufgabe" required style="flex:2;min-width:180px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px"/>
-        <input id="task-date" type="date" style="flex:1;min-width:140px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px"/>
-        <button style="padding:8px 12px;border:0;background:#3949ab;color:#fff;border-radius:10px;font-weight:600">+</button>
-      </form>
-      <div id="tasks-today"></div>
-    </section>
-
-    <!-- Spalte 3: MORGEN – Valentin: Stundenplan, Termine & Tasks -->
+    <!-- Spalte 2: MORGEN – Valentin -->
     <section class="card">
-      <h3>Morgen · Valentin – Stundenplan, Termine & Tasks</h3>
-      <div style="display:grid;gap:6px;grid-template-rows:auto auto auto">
-        <!-- Stundenplan MORGEN -->
+      <h3>Morgen · Valentin – Stundenplan & Termine</h3>
+      <div style="display:grid;gap:6px;grid-template-rows:auto auto">
         <div class="iframe-wrap" style="padding:6px">
           <table>
             <thead>
@@ -96,18 +77,12 @@
             <tbody id="stundenplan-morgen"></tbody>
           </table>
         </div>
-        <!-- Termine MORGEN (per Apps Script JSON) -->
         <div class="iframe-wrap" style="padding:6px">
           <div style="font-weight:600;margin:2px 0 6px 0">Termine · Morgen</div>
           <ul id="valentin-tomorrow-list" style="list-style:none;margin:0;padding:0"></ul>
           <div id="valentin-tomorrow-fallback" style="margin-top:6px">
             <iframe id="valentin-tomorrow" height="220" loading="lazy"></iframe>
           </div>
-        </div>
-        <!-- Tasks MORGEN (lokal gefiltert auf Datum morgen) -->
-        <div class="iframe-wrap" style="padding:6px">
-          <div style="font-weight:600;margin:2px 0 6px 0">Aufgaben · Morgen</div>
-          <div id="tasks-tomorrow"></div>
         </div>
       </div>
     </section>
@@ -128,19 +103,15 @@
 
   <!-- ===== UNTERER BEREICH: Zusammengefasste Übersicht ===== -->
   <section class="card">
-    <h3>Woche · Dienstplan + Sonstige Termine (kombiniert)</h3>
+    <h3>Woche · Dienstplan + Sonstige Termine + Geburtstage + Valentin</h3>
     <div class="iframe-wrap"><iframe id="combined-week" height="300" loading="lazy"></iframe></div>
   </section>
 
 </div>
 
 <script>
-  // === KONFIG ===
-  // OPTIONAL: Apps Script Web-App URL, die Events als JSON liefert
-  // (siehe Anleitung unten im Kommentar)
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
 
-  // Kalender-IDs (robust, ohne komplette Embed-URLs)
   const CAL = {
     VALENTIN: '057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
     GENERAL:  'gabstaschill@gmail.com',
@@ -148,7 +119,6 @@
     BDAY:     'addressbook#contacts@group.v.calendar.google.com'
   };
 
-  // Hilfsfunktionen
   function toYMD(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return `${y}${m}${da}`; }
   function toISO(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
   function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
@@ -163,49 +133,9 @@
   const TODAY_ISO = toISO(now);
   const TOMORROW_ISO = toISO(TOMORROW_DATE);
 
-  // Kombinierte Wochenübersicht
   document.getElementById('combined-week').src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]);
 
-  // ===== Aufgaben (lokal) =====
-  const STORAGE_KEY = 'family_tasks_v1';
-  const tasksTodayEl = document.getElementById('tasks-today');
-  const tasksTomorrowEl = document.getElementById('tasks-tomorrow');
-  const form = document.getElementById('task-form');
-  const titleInput = document.getElementById('task-title');
-  const dateInput = document.getElementById('task-date');
-
-  function loadTasks(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] } catch(e){ return [] } }
-  function saveTasks(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }
-  function renderTasks(containerEl, predicate){
-    const list = loadTasks().filter(predicate);
-    containerEl.innerHTML = list.length ? '' : '<div style="color:#666;font-size:12px">Keine Aufgaben.</div>';
-    list.forEach((t)=>{
-      const row = document.createElement('div'); row.className = 'task-item';
-      row.innerHTML = `
-        <input type="checkbox" ${t.done?'checked':''} data-id="${t.id||''}" style="transform:scale(1.1)">
-        <div style="flex:1">
-          <div class="title">${t.title}</div>
-          ${t.date ? `<div style=\"font-size:11px;color:#666\">Fällig: ${t.date}</div>` : ''}
-        </div>`;
-      row.querySelector('input').addEventListener('change',(e)=>{
-        const all = loadTasks(); const idx = all.findIndex(x=>(x.id||'')===(t.id||''));
-        if(idx>-1){all[idx].done=e.target.checked;saveTasks(all);}  
-      });
-      containerEl.appendChild(row);
-    });
-  }
-  function refreshTasks(){
-    renderTasks(tasksTodayEl,  t => (t.date||TODAY_ISO) === TODAY_ISO);
-    renderTasks(tasksTomorrowEl, t => t.date === TOMORROW_ISO);
-  }
-  form.addEventListener('submit',(e)=>{
-    e.preventDefault(); const title=titleInput.value.trim(); if(!title) return; const date=(dateInput.value||'').trim();
-    const all=loadTasks(); all.unshift({ id:String(Date.now()), title, date: date || null, done:false }); saveTasks(all);
-    titleInput.value=''; dateInput.value=''; refreshTasks();
-  });
-  refreshTasks();
-
-  // ===== Stundenplan HEUTE & MORGEN (Beispielwerte) =====
+  // Stundenplan Beispiel
   const stHeute = document.getElementById('stundenplan-heute');
   const stMorgen = document.getElementById('stundenplan-morgen');
   const testLessonsToday = [
@@ -221,15 +151,12 @@
   stHeute.innerHTML  = testLessonsToday.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
   stMorgen.innerHTML = testLessonsTomorrow.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
 
-  // ===== NEU: Tages-Events über Apps Script laden (falls konfiguriert) =====
   async function loadDayEvents(listEl, fallbackEl, calendarId, dayISO){
-    if(!APPS_SCRIPT_URL){ return; } // kein Script konfiguriert → wir lassen den Fallback (iframe) angezeigt
     try{
       const url = `${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calendarId)}&from=${dayISO}T00:00:00&to=${dayISO}T23:59:59`;
       const res = await fetch(url);
       if(!res.ok) throw new Error('HTTP '+res.status);
-      const data = await res.json(); // erwartet: [{start,end,summary,location,description}]
-      // Wenn Daten da sind: Fallback-iframe ausblenden und Liste rendern
+      const data = await res.json();
       if(Array.isArray(data)){
         fallbackEl.style.display = 'none';
         listEl.innerHTML = data.length ? '' : '<div style="color:#666;font-size:12px">Keine Termine.</div>';
@@ -244,11 +171,6 @@
     }catch(err){ console.warn('Apps Script Fetch fehlgeschlagen:', err); }
   }
 
-  // Fallback: wenn kein Apps Script eingetragen ist, laden wir die Agenda-Iframes (damit hast du weiterhin etwas sichtbar)
-  document.getElementById('valentin-today').src    = urlAgendaDay([CAL.VALENTIN], TODAY_YMD);
-  document.getElementById('valentin-tomorrow').src = urlAgendaDay([CAL.VALENTIN], TOMORROW_YMD);
-
-  // Wenn du APPS_SCRIPT_URL setzt, holen wir echte, exakt gefilterte Tages-Events:
   loadDayEvents(
     document.getElementById('valentin-today-list'),
     document.getElementById('valentin-today-fallback'),
@@ -262,35 +184,5 @@
     TOMORROW_ISO
   );
 </script>
-
-<!--
-ANLEITUNG: Apps Script als JSON-Bridge für Google-Kalender
----------------------------------------------------------
-1) Öffne https://script.google.com und erstelle ein neues Projekt.
-2) Lege eine Datei Code.gs mit folgendem Inhalt an:
-
-function doGet(e) {
-  const calId = e.parameter.cal;
-  const from  = new Date(e.parameter.from);
-  const to    = new Date(e.parameter.to);
-  const cal   = CalendarApp.getCalendarById(calId);
-  const evs   = cal.getEvents(from, to);
-  const out = evs.map(ev => ({
-    summary: ev.getTitle(),
-    start:   ev.isAllDayEvent() ? new Date(from) : ev.getStartTime(),
-    end:     ev.isAllDayEvent() ? new Date(to)   : ev.getEndTime(),
-    allDay:  ev.isAllDayEvent(),
-    location: ev.getLocation(),
-    description: ev.getDescription()
-  }));
-  return ContentService.createTextOutput(JSON.stringify(out))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-3) Über "Bereitstellen → Als Web-App" veröffentlichen, Zugriff: "Jeder mit dem Link".
-4) Die bereitgestellte URL hier oben als APPS_SCRIPT_URL eintragen.
-
-Vorteil: Exakte Tagesfilterung (heute/morgen), keine Iframe-Scrolllisten, keine OAuth-Hürde im Frontend.
--->
 </body>
 </html>
