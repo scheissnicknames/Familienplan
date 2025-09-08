@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="de">
+<!DOCTYPE html><html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,11 +6,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0f172a; --card:#0b1226; --card-2:#101a33; --text:#e5e7eb;
-      --primary:#7c3aed; --accent:#06b6d4;
+      --bg:#0f172a; --card:#0b1226; --card-2:#101a33; --text:#e5e7eb; --border:rgba(255,255,255,.08);
       --rot:#ef4444; --blau:#3b82f6; --gelb:#facc15; --gruen:#22c55e; --orange:#fb923c;
-      --border:rgba(255,255,255,.08);
     }
+    *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
     .wrap{padding:14px;display:grid;gap:14px}
     .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
@@ -41,44 +39,43 @@
     .btnrow{display:flex;flex-wrap:wrap;gap:8px}
     .btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
          padding:8px 10px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
-    .btn:active{transform:translateY(1px)}
+    .btn:active{transform:translateY(1px)}/* Floating Bubbles (right side) */
+.fixed-thumb{position:fixed;right:10px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);border-radius:12px;
+  padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  cursor:pointer;z-index:50;user-select:none;width:110px;text-align:center}
+.fixed-thumb .label{font-weight:800;letter-spacing:.3px}
+.fixed-thumb .hint{font-size:10px;opacity:.7;text-align:center;margin-top:6px}
 
-    /* Floating Bubbles (right side) */
-    .fixed-thumb{position:fixed;right:10px;background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.1);border-radius:12px;
-      padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);
-      cursor:pointer;z-index:50;user-select:none;width:110px;text-align:center}
-    .fixed-thumb .label{font-weight:800;letter-spacing:.3px}
-    .fixed-thumb .hint{font-size:10px;opacity:.7;text-align:center;margin-top:6px}
+/* Positions: Kalender unter Stundenplan */
+#fixedThumb{top:40%;}
+#monthThumb{top:55%;}
 
-    /* Positions: Kalender unter Stundenplan */
-    #fixedThumb{top:40%;}
-    #monthThumb{top:55%;}
+/* Modals */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
+.modal.open{display:flex}
+#fixedModal{z-index:110} /* Stundenplan über Kalender */
+#monthModal{z-index:90}
+.modal .dialog{position:relative;background:var(--card-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;max-width:95vw;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal .dialog h3{margin:0 0 10px}
+.close-x{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;cursor:pointer}
 
-    /* Modals */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
-    .modal.open{display:flex}
-    #fixedModal{z-index:110} /* Stundenplan über Kalender */
-    #monthModal{z-index:90}
-    .modal .dialog{position:relative;background:var(--card-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;max-width:95vw;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    .modal .dialog h3{margin:0 0 10px}
-    .close-x{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;cursor:pointer}
+.note{font-size:12px;color:#cbd5e1;opacity:.8;margin-top:6px}
+.agenda-list{list-style:none;margin:8px 0 0 0;padding:0}
+.agenda-day{margin:10px 0 0 0;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
+.agenda-day h4{margin:0 0 6px 0;font-size:13px;opacity:.9}
+.agenda-item{padding:4px 0;font-size:13px}
+.muted{color:#9ca3af}
+.error{color:#fca5a5;font-size:12px}
+.agenda-box{max-height:220px; overflow:auto}
 
-    .note{font-size:12px;color:#cbd5e1;opacity:.8;margin-top:6px}
-    .agenda-list{list-style:none;margin:8px 0 0 0;padding:0}
-    .agenda-day{margin:10px 0 0 0;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
-    .agenda-day h4{margin:0 0 6px 0;font-size:13px;opacity:.9}
-    .agenda-item{padding:4px 0;font-size:13px}
-    .muted{color:#9ca3af}
-    .error{color:#fca5a5;font-size:12px}
-    .agenda-box{max-height:220px; overflow:auto}
+/* Diagnose Badge */
+.diag{position:fixed;left:10px;bottom:10px;background:#0b1226;border:1px solid var(--border);border-radius:10px;padding:6px 8px;font-size:11px;opacity:.9;z-index:200}
+
   </style>
 </head>
 <body>
-<div class="wrap">
-
-  <!-- Heute/Morgen -->
-  <div class="top-grid">
+<div class="wrap">  <!-- Heute/Morgen -->  <div class="top-grid">
     <section class="card">
       <h3>Heute · Valentin</h3>
       <div class="iframe-wrap" style="padding:6px">
@@ -91,24 +88,20 @@
         <div id="valentin-today-status" style="font-size:12px"></div>
         <div id="valentin-today-fallback" style="display:none;margin-top:6px"><iframe id="valentin-today" height="200"></iframe></div>
       </div>
-    </section>
-
-    <section class="card">
-      <h3>Morgen · Valentin</h3>
-      <div class="iframe-wrap" style="padding:6px">
-        <table><thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
-        <tbody id="stundenplan-morgen"></tbody></table>
-      </div>
-      <div class="iframe-wrap" style="padding:10px">
-        <strong>Termine · Morgen</strong>
-        <ul id="valentin-tomorrow-list" style="list-style:none;padding:0;margin:6px 0 0 0"></ul>
-        <div id="valentin-tomorrow-status" style="font-size:12px"></div>
-      </div>
-    </section>
+    </section><section class="card">
+  <h3>Morgen · Valentin</h3>
+  <div class="iframe-wrap" style="padding:6px">
+    <table><thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
+    <tbody id="stundenplan-morgen"></tbody></table>
   </div>
+  <div class="iframe-wrap" style="padding:10px">
+    <strong>Termine · Morgen</strong>
+    <ul id="valentin-tomorrow-list" style="list-style:none;padding:0;margin:6px 0 0 0"></ul>
+    <div id="valentin-tomorrow-status" style="font-size:12px"></div>
+  </div>
+</section>
 
-  <!-- Agenda 7 Tage (eigene Liste) -->
-  <section class="card">
+  </div>  <!-- Agenda 7 Tage (eigene Liste) -->  <section class="card">
     <h3>Agenda · nächste 7 Tage · alle Kalender</h3>
     <div class="iframe-wrap agenda-box" style="padding:10px">
       <div id="combined-status" class="muted">Lade Agenda…</div>
@@ -118,18 +111,10 @@
     <div class="note">
       Lädt serverseitig über dein Apps Script (kein Google-Login am Tablet nötig). Wenn Fehler angezeigt werden, fehlen dem Script-Account vermutlich die Leserechte auf einen der Kalender oder CORS ist nicht aktiv.
     </div>
-  </section>
-
-  <!-- Smart Home Widgets (Fully JS + Intent-Fallback) -->
-  <section class="card">
+  </section>  <!-- Smart Home Widgets (Fully JS + Intent-Fallback) -->  <section class="card">
     <h3>Smart Home</h3>
     <div class="widgets" id="widgets"></div>
-  </section>
-
-</div>
-
-<!-- Fixer Stundenplan Thumbnail + Modal (ausklappbar) -->
-<div class="fixed-thumb" id="fixedThumb" title="Fixen Stundenplan vergrößern">
+  </section></div><!-- Fixer Stundenplan Thumbnail + Modal (ausklappbar) --><div class="fixed-thumb" id="fixedThumb" title="Fixen Stundenplan vergrößern">
   <div class="label">Stundenplan</div>
   <div class="hint">Tippen zum Vergrößern</div>
 </div>
@@ -144,10 +129,7 @@
       </table>
     </div>
   </div>
-</div>
-
-<!-- Kalender-Bubble (Monatsansicht) unter Stundenplan -->
-<div class="fixed-thumb" id="monthThumb" title="Monatskalender öffnen">
+</div><!-- Kalender-Bubble (Monatsansicht) unter Stundenplan --><div class="fixed-thumb" id="monthThumb" title="Monatskalender öffnen">
   <div class="label">Kalender</div>
   <div class="hint">Monatsansicht</div>
 </div>
@@ -160,9 +142,7 @@
     </div>
     <div class="note">Für Google-Embeds muss der eingeloggte Account Zugriffsrechte haben – sonst „Berechtigung erforderlich“.</div>
   </div>
-</div>
-
-<script>
+</div><!-- Diagnose Badge --><div class="diag" id="diag">Init…</div><script>
 /* ================== KONFIG ================== */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
 const CAL = {
@@ -180,6 +160,9 @@ const APPS = [
 ];
 
 /* ================== Helpers ================== */
+const $ = s => document.querySelector(s);
+function setDiag(msg){ const d=$('#diag'); if(d) d.textContent = msg; }
+window.addEventListener('error', (e)=>{ setDiag('JS-Fehler: '+ (e.message||'unbekannt')); });
 function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
 function ymd(d){ return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
 function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -224,9 +207,9 @@ function googleAgendaDay(calId, ymdStr){
 
 /* ================== Kombinierte 7-Tage-Agenda (Apps Script) ================== */
 async function loadCombinedAgenda(){
-  const status = document.getElementById('combined-status');
-  const list   = document.getElementById('combined-agenda');
-  const errors = document.getElementById('combined-errors');
+  const status = $('#combined-status');
+  const list   = $('#combined-agenda');
+  const errors = $('#combined-errors');
   status.textContent = 'Lade Agenda…'; list.innerHTML = ''; errors.innerHTML='';
 
   const start = new Date(); start.setHours(0,0,0,0);
@@ -291,22 +274,23 @@ function row(r){return `<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td
 
 /* ================== Smart Home ================== */
 function renderSmartHome(){
-  const widgets=document.getElementById('widgets');
-  APPS.forEach(app=>{
-    const div=document.createElement('div'); div.className='tile';
-    div.innerHTML=`<h4>${app.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
-    const btn=document.createElement('a'); btn.className='btn'; btn.textContent=app.label; btn.href=app.intent; btn.target='_self'; btn.rel='noopener';
-    btn.addEventListener('click', (ev)=>{
-      try{
-        if(window.fully && typeof fully.startApplication==='function'){
-          fully.startApplication(app.pkg);
-          ev.preventDefault();
-        }
-      }catch(e){ /* fallback to intent */ }
+  try{
+    const widgets=$('#widgets');
+    if(!widgets){ setDiag('Fehler: #widgets fehlt'); return; }
+    APPS.forEach(app=>{
+      const div=document.createElement('div'); div.className='tile';
+      div.innerHTML=`<h4>${app.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
+      const btn=document.createElement('a'); btn.className='btn'; btn.textContent=app.label; btn.href=app.intent; btn.target='_self'; btn.rel='noopener';
+      btn.addEventListener('click', (ev)=>{
+        try{
+          if(window.fully && typeof fully.startApplication==='function'){
+            fully.startApplication(app.pkg); ev.preventDefault();
+          }
+        }catch(e){ /* fallback to intent */ }
+      });
+      row.appendChild(btn); div.appendChild(row); widgets.appendChild(div);
     });
-    row.appendChild(btn);
-    div.appendChild(row); widgets.appendChild(div);
-  });
+  }catch(e){ setDiag('renderSmartHome() Fehler'); }
 }
 
 /* ================== Monatskalender (Popup) ================== */
@@ -315,80 +299,65 @@ function buildMonthEmbed(){
   return buildGoogleEmbed(['mode=MONTH', ...srcs]);
 }
 function wireMonthModal(){
-  const modal=document.getElementById('monthModal');
-  const thumb=document.getElementById('monthThumb');
-  const close=document.getElementById('closeMonth');
-  const frame=document.getElementById('monthFrame');
-  function toggle(){ modal.classList.toggle('open');
-    if(modal.classList.contains('open')){ frame.src = buildMonthEmbed(); }
-  }
-  thumb.addEventListener('click', toggle);
-  close.addEventListener('click', toggle);
-  modal.addEventListener('click', e=>{ if(e.target===modal) toggle(); });
+  try{
+    const modal=$('#monthModal'); const thumb=$('#monthThumb'); const close=$('#closeMonth'); const frame=$('#monthFrame');
+    if(!modal||!thumb||!close||!frame){ setDiag('monthModal Elemente fehlen'); return; }
+    function toggle(){ modal.classList.toggle('open'); if(modal.classList.contains('open')) frame.src = buildMonthEmbed(); }
+    thumb.addEventListener('click', toggle); close.addEventListener('click', toggle); modal.addEventListener('click', e=>{ if(e.target===modal) toggle(); });
+  }catch(e){ setDiag('wireMonthModal() Fehler'); }
 }
 
 /* ================== Stundenpläne (Demo) ================== */
 function renderStundenplaene(){
-  const stHeute=document.getElementById('stundenplan-heute');
-  stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
-  <tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
-  <tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
-
-  const stMorgen=document.getElementById('stundenplan-morgen');
-  stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
-  <tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
-  <tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
-
-  const fixBody=document.getElementById('stundenplan-fix');
-  fixBody.innerHTML=fixedData.map(row).join('');
+  try{
+    const stHeute=$('#stundenplan-heute'); const stMorgen=$('#stundenplan-morgen'); const fixBody=$('#stundenplan-fix');
+    if(!stHeute||!stMorgen||!fixBody){ setDiag('Stundenplan-Elemente fehlen'); return; }
+    stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
+    <tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
+    <tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
+    stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
+    <tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
+    <tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
+    fixBody.innerHTML=fixedData.map(row).join('');
+  }catch(e){ setDiag('renderStundenplaene() Fehler'); }
 }
 
 /* ================== Heute/Morgen Refresh ================== */
 function refreshTodayTomorrow(){
-  const now = new Date();
-  const TODAY_ISO = isoDate(now), TODAY_YMD = ymd(now);
-  const tmr = new Date(now); tmr.setDate(now.getDate()+1);
-  const TOMORROW_ISO = isoDate(tmr), TOMORROW_YMD = ymd(tmr);
-
-  const todayBox=document.getElementById('valentin-today-fallback');
-  const todayIframe=document.getElementById('valentin-today');
-  if(todayIframe){ const url = googleAgendaDay(CAL.VALENTIN, TODAY_YMD); todayIframe.src = url; todayBox.style.display='block'; }
-
-  loadDayEvents(
-    document.getElementById('valentin-today-list'),
-    document.getElementById('valentin-today-status'),
-    todayBox, todayIframe,
-    CAL.VALENTIN, TODAY_ISO, TODAY_YMD
-  );
-  loadDayEvents(
-    document.getElementById('valentin-tomorrow-list'),
-    document.getElementById('valentin-tomorrow-status'),
-    null, null,
-    CAL.VALENTIN, TOMORROW_ISO, TOMORROW_YMD
-  );
+  try{
+    const now = new Date(); const TODAY_ISO = isoDate(now), TODAY_YMD = ymd(now);
+    const tmr = new Date(now); tmr.setDate(now.getDate()+1); const TOMORROW_ISO = isoDate(tmr), TOMORROW_YMD = ymd(tmr);
+    const todayBox=$('#valentin-today-fallback'); const todayIframe=$('#valentin-today');
+    if(todayIframe){ todayIframe.src = googleAgendaDay(CAL.VALENTIN, TODAY_YMD); if(todayBox) todayBox.style.display='block'; }
+    loadDayEvents($('#valentin-today-list'), $('#valentin-today-status'), todayBox, todayIframe, CAL.VALENTIN, TODAY_ISO, TODAY_YMD);
+    loadDayEvents($('#valentin-tomorrow-list'), $('#valentin-tomorrow-status'), null, null, CAL.VALENTIN, TOMORROW_ISO, TOMORROW_YMD);
+  }catch(e){ setDiag('refreshTodayTomorrow() Fehler'); }
 }
 
 /* ================== Stundenplan-Modal ================== */
 function wireFixedModal(){
-  const modal=document.getElementById('fixedModal');
-  const thumb=document.getElementById('fixedThumb');
-  const closeBtn=document.getElementById('closeModal');
-  function toggleModal(){ modal.classList.toggle('open'); }
-  thumb.addEventListener('click', toggleModal);
-  closeBtn.addEventListener('click', toggleModal);
-  modal.addEventListener('click', (e)=>{ if(e.target===modal) toggleModal(); });
+  try{
+    const modal=$('#fixedModal'); const thumb=$('#fixedThumb'); const closeBtn=$('#closeModal');
+    if(!modal||!thumb||!closeBtn){ setDiag('fixedModal Elemente fehlen'); return; }
+    const toggle=()=> modal.classList.toggle('open');
+    thumb.addEventListener('click', toggle); closeBtn.addEventListener('click', toggle); modal.addEventListener('click', e=>{ if(e.target===modal) toggle(); });
+  }catch(e){ setDiag('wireFixedModal() Fehler'); }
 }
 
-// Init
-renderSmartHome();
-renderStundenplaene();
-wireFixedModal();
-wireMonthModal();
-refreshTodayTomorrow();
-loadCombinedAgenda();
+/* ================== INIT ================== */
+(function init(){
+  try{
+    setDiag('Init…');
+    renderSmartHome(); setDiag('SmartHome OK');
+    renderStundenplaene(); setDiag('Stundenpläne OK');
+    wireFixedModal(); setDiag('Stundenplan-Modal OK');
+    wireMonthModal(); setDiag('Monatskalender-Modal OK');
+    refreshTodayTomorrow(); setDiag('Heute/Morgen OK');
+    loadCombinedAgenda(); setDiag('Agenda OK');
+  }catch(e){ setDiag('Init Fehler: '+e.message); }
+})();
 
 // Auto-Reload alle 5 Minuten
-setInterval(()=>{ refreshTodayTomorrow(); loadCombinedAgenda(); }, 5*60*1000);
-</script>
-</body>
+setInterval(()=>{ try{ refreshTodayTomorrow(); loadCombinedAgenda(); setDiag('Auto-Reload OK'); }catch(e){ setDiag('Auto-Reload Fehler'); } }, 5*60*1000);
+</script></body>
 </html>
