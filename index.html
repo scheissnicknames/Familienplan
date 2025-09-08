@@ -7,10 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0f172a; --card:#0b1226; --card-2:#101a33;
-      --text:#e5e7eb; --primary:#7c3aed; --accent:#06b6d4;
-      --rot:#ef4444; --blau:#3b82f6; --gelb:#facc15;
-      --gruen:#22c55e; --orange:#fb923c; --braun:#8b5e34;
+      --bg:#0f172a; --card:#0b1226; --card-2:#101a33; --text:#e5e7eb;
+      --primary:#7c3aed; --accent:#06b6d4;
+      --rot:#ef4444; --blau:#3b82f6; --gelb:#facc15; --gruen:#22c55e; --orange:#fb923c;
     }
     body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
     header{background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;padding:14px;text-align:center;font-weight:800}
@@ -30,15 +29,8 @@
     .fach-musik{background:var(--gruen);color:#fff}
     .fach-kunst{background:var(--blau);color:#fff}
     .fach-sachkunde{background:var(--orange);color:#111}
-    /* Müll */
-    .muell-gelber{background:var(--gelb);color:#111}
-    .muell-rest{background:var(--gruen);color:#fff}
-    .muell-papier{background:var(--blau);color:#fff}
-    .muell-laub{background:var(--braun);color:#fff}
     .iframe-wrap{border:1px solid rgba(255,255,255,.08);border-radius:12px;background:var(--card-2);overflow:hidden}
     iframe{width:100%;border:0}
-    .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-    .legend span{padding:4px 8px;border-radius:999px;font-size:11px;color:#fff}
     /* Widgets */
     .widgets{display:grid;gap:12px;grid-template-columns:repeat(4,1fr)}
     @media(max-width:1200px){.widgets{grid-template-columns:repeat(2,1fr)}}
@@ -49,6 +41,23 @@
     .btnrow{display:flex;flex-wrap:wrap;gap:8px}
     .btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
          padding:8px 10px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+
+    /* Fixer Stundenplan Thumbnail + Modal */
+    .fixed-thumb{position:fixed;right:10px;top:50%;transform:translateY(-50%);
+      background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+      padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer;z-index:50}
+    .fixed-thumb .mini{width:220px;max-height:160px;overflow:hidden;border-radius:8px}
+    .fixed-thumb table{font-size:10px}
+    .fixed-thumb .hint{font-size:10px;opacity:.7;text-align:center;margin-top:6px}
+
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
+    .modal.open{display:flex}
+    .modal .dialog{position:relative;background:var(--card-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;max-width:95vw;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .modal .dialog h3{margin:0 0 10px}
+    .close-x{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;cursor:pointer}
+
+    .note{font-size:12px;color:#cbd5e1;opacity:.8;margin-top:6px}
   </style>
 </head>
 <body>
@@ -65,9 +74,9 @@
       </div>
       <div class="iframe-wrap" style="padding:10px">
         <strong>Termine · Heute</strong>
-        <ul id="valentin-today-list" style="list-style:none;padding:0"></ul>
+        <ul id="valentin-today-list" style="list-style:none;padding:0;margin:6px 0 0 0"></ul>
         <div id="valentin-today-status" style="font-size:12px"></div>
-        <div id="valentin-today-fallback" style="display:none"><iframe id="valentin-today" height="200"></iframe></div>
+        <div id="valentin-today-fallback" style="display:none;margin-top:6px"><iframe id="valentin-today" height="200"></iframe></div>
       </div>
     </section>
 
@@ -79,36 +88,20 @@
       </div>
       <div class="iframe-wrap" style="padding:10px">
         <strong>Termine · Morgen</strong>
-        <ul id="valentin-tomorrow-list" style="list-style:none;padding:0"></ul>
+        <ul id="valentin-tomorrow-list" style="list-style:none;padding:0;margin:6px 0 0 0"></ul>
         <div id="valentin-tomorrow-status" style="font-size:12px"></div>
       </div>
     </section>
   </div>
 
-  <!-- Fixer Stundenplan + Müll -->
+  <!-- Woche (kombiniert) → Standardansicht AGENDA (7 Tage) -->
   <section class="card">
-    <h3>Fixer Stundenplan</h3>
-    <div class="iframe-wrap" style="padding:6px">
-      <table>
-        <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
-        <tbody id="stundenplan-fix"></tbody>
-      </table>
-    </div>
-    <div class="legend">
-      <span class="muell-gelber">Gelber Sack</span>
-      <span class="muell-rest">Restmüll</span>
-      <span class="muell-papier">Papier</span>
-      <span class="muell-laub">Laubsäcke</span>
-    </div>
+    <h3>Agenda · nächste 7 Tage · alle Kalender</h3>
+    <div class="iframe-wrap"><iframe id="combined-week" height="340"></iframe></div>
+    <div class="note">Falls „Berechtigung erforderlich“ erscheint: Stelle sicher, dass das Tablet im Google-Konto angemeldet ist, das Zugriff auf die Kalender hat – oder mache die betreffenden Kalender öffentlich (nicht empfohlen).</div>
   </section>
 
-  <!-- Woche -->
-  <section class="card">
-    <h3>Woche · alle Kalender</h3>
-    <div class="iframe-wrap"><iframe id="combined-week" height="300"></iframe></div>
-  </section>
-
-  <!-- Smart Home Widgets -->
+  <!-- Smart Home Widgets (Intent-Buttons) -->
   <section class="card">
     <h3>Smart Home</h3>
     <div class="widgets" id="widgets"></div>
@@ -116,7 +109,31 @@
 
 </div>
 
+<!-- Fixer Stundenplan Thumbnail + Modal (ausklappbar) -->
+<div class="fixed-thumb" id="fixedThumb" title="Fixen Stundenplan vergrößern">
+  <div class="mini">
+    <table>
+      <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
+      <tbody id="stundenplan-fix-thumb"></tbody>
+    </table>
+  </div>
+  <div class="hint">Tippen zum Vergrößern</div>
+</div>
+<div class="modal" id="fixedModal">
+  <div class="dialog">
+    <div class="close-x" id="closeModal">Schließen ✕</div>
+    <h3>Fixer Stundenplan (Schuljahr)</h3>
+    <div class="iframe-wrap" style="padding:8px">
+      <table>
+        <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
+        <tbody id="stundenplan-fix"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script>
+// ===== KONFIG =====
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
 const CAL = {
   VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
@@ -125,25 +142,50 @@ const CAL = {
   BDAY:'addressbook#contacts@group.v.calendar.google.com'
 };
 
+// ===== Smart Home: App-Intents (öffnet Apps direkt in Fully) =====
+const ACTIONS = [
+  { title:'Philips Hue', items:[
+      {label:'Hue App öffnen', url:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end'}
+    ] },
+  { title:'Sonos', items:[
+      {label:'Sonos App öffnen', url:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end'}
+    ] },
+  { title:'tado°', items:[
+      {label:'tado° App öffnen', url:'intent://com.tado/#Intent;scheme=app;package=com.tado;end'}
+    ] },
+  { title:'eufy Security', items:[
+      {label:'eufy App öffnen', url:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end'}
+    ] }
+];
+
+// ===== Helpers =====
 function buildBase(params){
   const base='https://calendar.google.com/calendar/embed?';
   const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
   return base+[...common,...params].join('&');
 }
-function urlWeek(ids){return buildBase(['mode=WEEK',...ids.map(i=>'src='+encodeURIComponent(i))]);}
-function urlAgendaDay(id,ymd){
-  const y=+ymd.slice(0,4),m=+ymd.slice(4,6)-1,d=+ymd.slice(6,8);
-  const start=new Date(y,m,d);const end=new Date(start);end.setDate(start.getDate()+1);
+function urlAgendaDay(calId, ymd){
+  // [Tag, Folgetag)
+  const y=+ymd.slice(0,4), m=+ymd.slice(4,6)-1, d=+ymd.slice(6,8);
+  const start=new Date(y,m,d); const end=new Date(start); end.setDate(start.getDate()+1);
   const endYMD=`${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
-  return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,'src='+encodeURIComponent(id)]);
+  return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,'src='+encodeURIComponent(calId)]);
+}
+function urlAgendaRange(calIds, startYMD, endYMDExcl){
+  // mehrere Kalender, AGENDA-Range [start, end)
+  const srcs = calIds.map(id=>'src='+encodeURIComponent(id));
+  return buildBase(['mode=AGENDA', `dates=${startYMD}/${endYMDExcl}`, ...srcs]);
 }
 function computeDates(){
-  const now=new Date(), y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+  const now=new Date();
+  const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
   const TODAY_ISO=`${y}-${m}-${d}`, TODAY_YMD=`${y}${m}${d}`;
-  const t=new Date(now);t.setDate(now.getDate()+1);
-  const TOMORROW_ISO=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-  const TOMORROW_YMD=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-  return {TODAY_ISO,TODAY_YMD,TOMORROW_ISO,TOMORROW_YMD};
+  const t=new Date(now); t.setDate(now.getDate()+7); // 7 Tage Range
+  const END_YMD=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+  const tmr=new Date(now); tmr.setDate(now.getDate()+1);
+  const TOMORROW_ISO=`${tmr.getFullYear()}-${String(tmr.getMonth()+1).padStart(2,'0')}-${String(tmr.getDate()).padStart(2,'0')}`;
+  const TOMORROW_YMD=`${tmr.getFullYear()}${String(tmr.getMonth()+1).padStart(2,'0')}${String(tmr.getDate()).padStart(2,'0')}`;
+  return {TODAY_ISO,TODAY_YMD,END_YMD,TOMORROW_ISO,TOMORROW_YMD};
 }
 function toTimeStr(d){return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
 
@@ -152,49 +194,91 @@ async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,is
     statusEl.textContent='Lade Termine…';
     const res=await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calId)}&from=${iso}T00:00:00&to=${iso}T23:59:59`);
     if(!res.ok) throw new Error(res.status);
-    const data=await res.json();listEl.innerHTML='';
-    if(data.length){data.sort((a,b)=>new Date(a.start)-new Date(b.start));
+    const data=await res.json(); listEl.innerHTML='';
+    if(Array.isArray(data) && data.length){
+      data.sort((a,b)=>new Date(a.start)-new Date(b.start));
       data.forEach(ev=>{
         const li=document.createElement('li');
         const t=ev.allDay?'Ganztägig':`${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`;
-        li.innerHTML=`${t} · ${ev.summary||''}`;listEl.appendChild(li);
-      });statusEl.textContent='';if(fallbackBox) fallbackBox.style.display='none';
-    }else{statusEl.textContent='Keine Termine';if(fallbackBox&&fallbackIframe){fallbackIframe.src=urlAgendaDay(calId,ymd);fallbackBox.style.display='block';}}
-  }catch(e){statusEl.textContent='Fehler';if(fallbackBox&&fallbackIframe){fallbackIframe.src=urlAgendaDay(calId,ymd);fallbackBox.style.display='block';}}
+        li.textContent=`${t} · ${ev.summary||''}`; listEl.appendChild(li);
+      });
+      statusEl.textContent=''; if(fallbackBox) fallbackBox.style.display='none';
+    } else {
+      statusEl.textContent='Keine Termine.';
+      if(fallbackBox && fallbackIframe){ fallbackIframe.src=urlAgendaDay(calId, ymd); fallbackBox.style.display='block'; }
+    }
+  }catch(e){
+    statusEl.textContent='Fehler beim Laden.';
+    if(fallbackBox && fallbackIframe){ fallbackIframe.src=urlAgendaDay(calId, ymd); fallbackBox.style.display='block'; }
+  }
 }
 
 function refreshAll(){
   const d=computeDates();
+  // Heute: Fallback-Iframe vorab anzeigen
   const todayBox=document.getElementById('valentin-today-fallback');
   const todayIframe=document.getElementById('valentin-today');
-  if(todayIframe){todayIframe.src=urlAgendaDay(CAL.VALENTIN,d.TODAY_YMD);todayBox.style.display='block';}
-  loadDayEvents(document.getElementById('valentin-today-list'),document.getElementById('valentin-today-status'),todayBox,todayIframe,CAL.VALENTIN,d.TODAY_ISO,d.TODAY_YMD);
-  loadDayEvents(document.getElementById('valentin-tomorrow-list'),document.getElementById('valentin-tomorrow-status'),null,null,CAL.VALENTIN,d.TOMORROW_ISO,d.TOMORROW_YMD);
-  document.getElementById('combined-week').src=urlWeek([CAL.GENERAL,CAL.DIENST,CAL.BDAY,CAL.VALENTIN])+`&v=${Date.now()}`;
+  if(todayIframe){ todayIframe.src=urlAgendaDay(CAL.VALENTIN,d.TODAY_YMD); todayBox.style.display='block'; }
+  // Listen
+  loadDayEvents(
+    document.getElementById('valentin-today-list'),
+    document.getElementById('valentin-today-status'),
+    todayBox, todayIframe,
+    CAL.VALENTIN, d.TODAY_ISO, d.TODAY_YMD
+  );
+  loadDayEvents(
+    document.getElementById('valentin-tomorrow-list'),
+    document.getElementById('valentin-tomorrow-status'),
+    null, null,
+    CAL.VALENTIN, d.TOMORROW_ISO, d.TOMORROW_YMD
+  );
+  // Kombinierte Agenda 7 Tage
+  const combined=document.getElementById('combined-week');
+  combined.src = urlAgendaRange([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN], d.TODAY_YMD, d.END_YMD) + `&v=${Date.now()}`;
 }
 
-// Demo Stundenpläne
+// Demo Stundenpläne (ersetzbar durch echte Daten)
 const stHeute=document.getElementById('stundenplan-heute');
-stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class=\"fach-mathe\">Mathe</td><td>101</td></tr>
-<tr><td>09:00–09:45</td><td class=\"fach-englisch\">Englisch</td><td>204</td></tr>
-<tr><td>10:00–10:45</td><td class=\"fach-deutsch\">Deutsch</td><td>112</td></tr>`;
+stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
+<tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
+<tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
 const stMorgen=document.getElementById('stundenplan-morgen');
-stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class=\"fach-deutsch\">Deutsch</td><td>101</td></tr>
-<tr><td>09:00–09:45</td><td class=\"fach-mathe\">Mathe</td><td>204</td></tr>
-<tr><td>10:00–10:45</td><td class=\"fach-musik\">Musik</td><td>Saal</td></tr>`;
+stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
+<tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
+<tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
 
-refreshAll();setInterval(refreshAll,5*60*1000);
+// Fixer Stundenplan (Thumbnail & Modal)
+const fixThumbBody=document.getElementById('stundenplan-fix-thumb');
+const fixBody=document.getElementById('stundenplan-fix');
+const fixedData=[
+  {time:'08:00–08:45', mo:'Mathe', moCls:'fach-mathe', di:'Deutsch', diCls:'fach-deutsch', mi:'Englisch', miCls:'fach-englisch', do:'Mathe', doCls:'fach-mathe', fr:'Musik', frCls:'fach-musik'},
+  {time:'09:00–09:45', mo:'Englisch', moCls:'fach-englisch', di:'Musik', diCls:'fach-musik', mi:'Deutsch', miCls:'fach-deutsch', do:'Kunst', doCls:'fach-kunst', fr:'Mathe', frCls:'fach-mathe'}
+];
+function row(r){return `<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td><td class="${r.diCls}">${r.di}</td><td class="${r.miCls}">${r.mi}</td><td class="${r.doCls}">${r.do}</td><td class="${r.frCls}">${r.fr}</td></tr>`}
+fixThumbBody.innerHTML=fixedData.map(row).join('');
+fixBody.innerHTML=fixedData.map(row).join('');
 
-// Smart Home Widgets
+const modal=document.getElementById('fixedModal');
+const thumb=document.getElementById('fixedThumb');
+const closeBtn=document.getElementById('closeModal');
+function toggleModal(){ modal.classList.toggle('open'); }
+thumb.addEventListener('click', toggleModal);
+closeBtn.addEventListener('click', toggleModal);
+modal.addEventListener('click', (e)=>{ if(e.target===modal) toggleModal(); });
+
+// Smart Home Widgets rendern
 const widgets=document.getElementById('widgets');
-const ACTIONS=[{title:'Philips Hue',items:[{label:'Abendlicht'},{label:'Alles aus'}]},
-               {title:'Sonos',items:[{label:'Play'},{label:'Pause'}]},
-               {title:'tado°',items:[{label:'Komfort'},{label:'Eco'}]},
-               {title:'eufy',items:[{label:'Türklingel'},{label:'Garten'}]}];
-ACTIONS.forEach(gr=>{const div=document.createElement('div');div.className='tile';
-  div.innerHTML=`<h4>${gr.title}</h4>`;const row=document.createElement('div');row.className='btnrow';
-  gr.items.forEach(it=>{const b=document.createElement('button');b.className='btn';b.textContent=it.label;row.appendChild(b);});
-  div.appendChild(row);widgets.appendChild(div);});
+function openURL(u){ window.location.href = u; }
+ACTIONS.forEach(gr=>{
+  const div=document.createElement('div'); div.className='tile';
+  div.innerHTML=`<h4>${gr.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
+  gr.items.forEach(it=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=it.label; b.onclick=()=>openURL(it.url); row.appendChild(b); });
+  div.appendChild(row); widgets.appendChild(div);
+});
+
+// Initial + Auto-Reload
+refreshAll();
+setInterval(refreshAll, 5*60*1000);
 </script>
 </body>
 </html>
