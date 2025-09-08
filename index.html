@@ -123,37 +123,39 @@
 </div>
 
 <script>
-  // Quellen
-  const SRC_VALENTIN = "https://calendar.google.com/calendar/embed?src=057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188%40group.calendar.google.com&ctz=Europe%2FBerlin";
-  const SRC_GENERAL  = "https://calendar.google.com/calendar/embed?src=gabstaschill%40gmail.com&ctz=Europe%2FBerlin";
-  const SRC_DIENST   = "https://calendar.google.com/calendar/embed?src=emujcvc9sc89j8gi2l9kdvf1i0%40group.calendar.google.com&ctz=Europe%2FBerlin";
-  const SRC_BDAY    = "https://calendar.google.com/calendar/embed?src=addressbook%23contacts%40group.v.calendar.google.com&ctz=Europe%2FBerlin";
+  // Kalender-IDs (robuster als komplette URLs)
+  const CAL = {
+    VALENTIN: '057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
+    GENERAL:  'gabstaschill@gmail.com',
+    DIENST:   'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com',
+    BDAY:     'addressbook#contacts@group.v.calendar.google.com'
+  };
 
-  // Helper für Google Embed-Ansichten
-  function buildAgendaDay(src, date){
-    const params = ['mode=AGENDA','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2',`dates=${date}/${date}`].join('&');
-    return `${src}&${params}`;
-  }
-  function buildWeek(src){
-    const params = ['mode=WEEK','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'].join('&');
-    return `${src}&${params}`;
-  }
-  function buildWeekCombined(base, extraSrcs){
-    // mehrere Kalender kombiniert anzeigen (general + weitere src=...)
-    const extras = extraSrcs.map(src => `src=${encodeURIComponent(src.split('src=')[1].split('&')[0])}`).join('&');
-    const params = ['mode=WEEK','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2', extras].join('&');
-    return `${base}&${params}`;
-  }
-
-  // Datumshilfen
+  // Hilfsfunktionen
   function toYMD(d){
-    const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const da = String(d.getDate()).padStart(2,'0');
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
     return `${y}${m}${da}`;
   }
   function toISO(d){
-    const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const da = String(d.getDate()).padStart(2,'0');
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
     return `${y}-${m}-${da}`;
   }
+  function buildBase(params){
+    const base = 'https://calendar.google.com/calendar/embed?';
+    const common = [
+      'ctz=Europe/Berlin', 'showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'
+    ];
+    return base + [...common, ...params].join('&');
+  }
+  function urlAgendaDay(calIds, ymd){
+    const srcs = calIds.map(id => `src=${encodeURIComponent(id)}`);
+    return buildBase(['mode=AGENDA', `dates=${ymd}/${ymd}`, ...srcs]);
+  }
+  function urlWeek(calIds){
+    const srcs = calIds.map(id => `src=${encodeURIComponent(id)}`);
+    return buildBase(['mode=WEEK', ...srcs]);
+  }
+
   const now = new Date();
   const TODAY_YMD = toYMD(now);
   const TOMORROW_DATE = new Date(now); TOMORROW_DATE.setDate(now.getDate()+1);
@@ -161,12 +163,14 @@
   const TODAY_ISO = toISO(now);
   const TOMORROW_ISO = toISO(TOMORROW_DATE);
 
-  // Iframes setzen
-  document.getElementById('valentin-today').src    = buildAgendaDay(SRC_VALENTIN, TODAY_YMD);
-  document.getElementById('valentin-tomorrow').src = buildAgendaDay(SRC_VALENTIN, TOMORROW_YMD);
-  document.getElementById('combined-week').src     = buildWeekCombined(SRC_GENERAL, [SRC_DIENST, SRC_BDAY, SRC_VALENTIN]);
+  // === Iframes mit exakten Tages-Ansichten ===
+  document.getElementById('valentin-today').src    = urlAgendaDay([CAL.VALENTIN], TODAY_YMD);
+  document.getElementById('valentin-tomorrow').src = urlAgendaDay([CAL.VALENTIN], TOMORROW_YMD);
 
-  // Aufgaben (lokal)
+  // Kombinierte Wochenübersicht: Allgemein + Dienst + Geburtstage + Valentin
+  document.getElementById('combined-week').src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]);
+
+  // ===== Aufgaben (lokal) =====
   const STORAGE_KEY = 'family_tasks_v1';
   const tasksTodayEl = document.getElementById('tasks-today');
   const tasksTomorrowEl = document.getElementById('tasks-tomorrow');
@@ -197,7 +201,7 @@
   }
 
   function refreshTasks(){
-    renderTasks(tasksTodayEl, t => (t.date||TODAY_ISO) === TODAY_ISO);
+    renderTasks(tasksTodayEl,  t => (t.date||TODAY_ISO) === TODAY_ISO);
     renderTasks(tasksTomorrowEl, t => t.date === TOMORROW_ISO);
   }
 
@@ -214,7 +218,7 @@
 
   refreshTasks();
 
-  // Stundenplan HEUTE & MORGEN (Beispielwerte – werden später durch echte Daten ersetzt)
+  // ===== Stundenplan HEUTE & MORGEN (Beispielwerte) =====
   const stHeute = document.getElementById('stundenplan-heute');
   const stMorgen = document.getElementById('stundenplan-morgen');
   const testLessonsToday = [
