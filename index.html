@@ -17,10 +17,10 @@
     .card h3{margin:0 0 8px 6px;font-size:15px;color:#333}
 
     /* Grids */
-    .top-grid{display:grid;gap:12px;grid-template-columns: 1.3fr 1fr 1.5fr;align-items:stretch}
+    .top-grid{display:grid;gap:12px;grid-template-columns: 1.2fr 1fr 1.4fr;align-items:stretch}
     .mid-grid,.bottom-grid{display:grid;gap:12px;grid-template-columns: 1fr}
 
-    /* Stundenplan Tabelle */
+    /* Tabellen */
     table{border-collapse:collapse;width:100%}
     th,td{padding:6px;border:1px solid #e5e5e5;text-align:center;font-size:13px}
     thead tr{background:#e8eaf6}
@@ -37,10 +37,9 @@
     /* Tasks */
     .task-item{display:flex;align-items:center;gap:6px;padding:4px}
     .task-item .title{font-weight:600;font-size:13px}
+    .task-col{display:grid;gap:8px}
 
-    @media (max-width:1100px){
-      .top-grid{grid-template-columns:1fr}
-    }
+    @media (max-width:1100px){.top-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -49,10 +48,11 @@
 
   <!-- ===== OBERER BEREICH ===== -->
   <div class="top-grid">
-    <!-- Spalte 1: Stundenplan + Termine (Valentin) HEUTE -->
+    <!-- Spalte 1: HEUTE – Valentin: Stundenplan & Termine (nur heutige) -->
     <section class="card">
-      <h3>Heute · Valentin: Stundenplan & Termine</h3>
+      <h3>Heute · Valentin – Stundenplan & Termine</h3>
       <div style="display:grid;gap:6px;grid-template-rows:auto 200px">
+        <!-- Stundenplan HEUTE -->
         <div class="iframe-wrap" style="padding:6px">
           <table>
             <thead>
@@ -61,24 +61,43 @@
             <tbody id="stundenplan-heute"></tbody>
           </table>
         </div>
+        <!-- Termine HEUTE (Valentin-Kalender als Agenda-Tag) -->
         <div class="iframe-wrap"><iframe id="valentin-today" height="200" loading="lazy"></iframe></div>
       </div>
     </section>
 
-    <!-- Spalte 2: Aufgaben HEUTE (lokal) -->
-    <section class="card">
+    <!-- Spalte 2: Aufgaben – Heute (lokal, mit Datum) -->
+    <section class="card task-col">
       <h3>Aufgaben · Heute</h3>
-      <form id="task-form" style="display:flex;gap:6px;margin-bottom:6px">
-        <input id="task-title" placeholder="Neue Aufgabe" required style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px"/>
+      <form id="task-form" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+        <input id="task-title" placeholder="Neue Aufgabe" required style="flex:2;min-width:180px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px"/>
+        <input id="task-date" type="date" style="flex:1;min-width:140px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px"/>
         <button style="padding:8px 12px;border:0;background:#3949ab;color:#fff;border-radius:10px;font-weight:600">+</button>
       </form>
       <div id="tasks-today"></div>
     </section>
 
-    <!-- Spalte 3: Extratermine & Tasks aus Google (Allgemeiner Kalender) MORGEN -->
+    <!-- Spalte 3: MORGEN – Valentin: Stundenplan, Termine & Tasks -->
     <section class="card">
-      <h3>Morgen · Allgemeiner Kalender & Tasks</h3>
-      <div class="iframe-wrap"><iframe id="general-tomorrow" height="260" loading="lazy"></iframe></div>
+      <h3>Morgen · Valentin – Stundenplan, Termine & Tasks</h3>
+      <div style="display:grid;gap:6px;grid-template-rows:auto 220px auto">
+        <!-- Stundenplan MORGEN -->
+        <div class="iframe-wrap" style="padding:6px">
+          <table>
+            <thead>
+              <tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr>
+            </thead>
+            <tbody id="stundenplan-morgen"></tbody>
+          </table>
+        </div>
+        <!-- Termine MORGEN (Valentin-Kalender als Agenda-Tag) -->
+        <div class="iframe-wrap"><iframe id="valentin-tomorrow" height="220" loading="lazy"></iframe></div>
+        <!-- Tasks MORGEN (lokal gefiltert auf Datum morgen) -->
+        <div class="iframe-wrap" style="padding:6px">
+          <div style="font-weight:600;margin:2px 0 6px 0">Aufgaben · Morgen</div>
+          <div id="tasks-tomorrow"></div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -90,104 +109,126 @@
         <thead>
           <tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr>
         </thead>
-        <tbody id="stundenplan-fix">
-          <!-- Hier bitte die echten Stundenplandaten eintragen -->
-        </tbody>
+        <tbody id="stundenplan-fix"><!-- Hier bitte die echten Stundenplandaten eintragen --></tbody>
       </table>
     </div>
   </section>
 
-  <!-- ===== UNTERER BEREICH ===== -->
+  <!-- ===== UNTERER BEREICH: Zusammengefasste Übersicht ===== -->
   <section class="card">
-    <h3>Dein Dienstplan (Woche)</h3>
-    <div class="iframe-wrap"><iframe id="dienst-woche" height="180" loading="lazy"></iframe></div>
-  </section>
-
-  <section class="card">
-    <h3>Sonstige Termine (Allgemeiner Kalender)</h3>
-    <div class="iframe-wrap"><iframe id="general-week" height="280" loading="lazy"></iframe></div>
+    <h3>Woche · Dienstplan + Sonstige Termine (kombiniert)</h3>
+    <div class="iframe-wrap"><iframe id="combined-week" height="300" loading="lazy"></iframe></div>
   </section>
 
 </div>
 
 <script>
+  // Quellen
   const SRC_VALENTIN = "https://calendar.google.com/calendar/embed?src=057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188%40group.calendar.google.com&ctz=Europe%2FBerlin";
   const SRC_GENERAL  = "https://calendar.google.com/calendar/embed?src=gabstaschill%40gmail.com&ctz=Europe%2FBerlin";
   const SRC_DIENST   = "https://calendar.google.com/calendar/embed?src=emujcvc9sc89j8gi2l9kdvf1i0%40group.calendar.google.com&ctz=Europe%2FBerlin";
+  const SRC_BDAY    = "https://calendar.google.com/calendar/embed?src=addressbook%23contacts%40group.v.calendar.google.com&ctz=Europe%2FBerlin";
 
+  // Helper für Google Embed-Ansichten
   function buildAgendaDay(src, date){
-    const params = [
-      'mode=AGENDA','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2',`dates=${date}/${date}`
-    ].join('&');
+    const params = ['mode=AGENDA','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2',`dates=${date}/${date}`].join('&');
     return `${src}&${params}`;
   }
   function buildWeek(src){
     const params = ['mode=WEEK','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'].join('&');
     return `${src}&${params}`;
   }
+  function buildWeekCombined(base, extraSrcs){
+    // mehrere Kalender kombiniert anzeigen (general + weitere src=...)
+    const extras = extraSrcs.map(src => `src=${encodeURIComponent(src.split('src=')[1].split('&')[0])}`).join('&');
+    const params = ['mode=WEEK','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2', extras].join('&');
+    return `${base}&${params}`;
+  }
 
+  // Datumshilfen
   function toYMD(d){
     const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const da = String(d.getDate()).padStart(2,'0');
     return `${y}${m}${da}`;
   }
+  function toISO(d){
+    const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const da = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${da}`;
+  }
   const now = new Date();
-  const TODAY = toYMD(now);
-  const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
-  const TOMORROW = toYMD(tomorrow);
+  const TODAY_YMD = toYMD(now);
+  const TOMORROW_DATE = new Date(now); TOMORROW_DATE.setDate(now.getDate()+1);
+  const TOMORROW_YMD = toYMD(TOMORROW_DATE);
+  const TODAY_ISO = toISO(now);
+  const TOMORROW_ISO = toISO(TOMORROW_DATE);
 
-  document.getElementById('valentin-today').src = buildAgendaDay(SRC_VALENTIN, TODAY);
-  document.getElementById('general-tomorrow').src = buildAgendaDay(SRC_GENERAL, TOMORROW);
-  document.getElementById('dienst-woche').src = buildWeek(SRC_DIENST);
-  document.getElementById('general-week').src = buildWeek(SRC_GENERAL);
+  // Iframes setzen
+  document.getElementById('valentin-today').src    = buildAgendaDay(SRC_VALENTIN, TODAY_YMD);
+  document.getElementById('valentin-tomorrow').src = buildAgendaDay(SRC_VALENTIN, TOMORROW_YMD);
+  document.getElementById('combined-week').src     = buildWeekCombined(SRC_GENERAL, [SRC_DIENST, SRC_BDAY, SRC_VALENTIN]);
 
-  // Aufgaben HEUTE (lokal)
+  // Aufgaben (lokal)
   const STORAGE_KEY = 'family_tasks_v1';
   const tasksTodayEl = document.getElementById('tasks-today');
+  const tasksTomorrowEl = document.getElementById('tasks-tomorrow');
   const form = document.getElementById('task-form');
   const titleInput = document.getElementById('task-title');
+  const dateInput = document.getElementById('task-date');
 
   function loadTasks(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] } catch(e){ return [] } }
   function saveTasks(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }
 
-  function renderTasksToday(){
-    const list = loadTasks();
-    const y = now.getFullYear(); const m = String(now.getMonth()+1).padStart(2,'0'); const d = String(now.getDate()).padStart(2,'0');
-    const iso = `${y}-${m}-${d}`;
-    const todays = list.filter(t => !t.date || t.date === iso);
-    tasksTodayEl.innerHTML = todays.length ? '' : '<div style="color:#666;font-size:12px">Keine Aufgaben für heute.</div>';
-    todays.forEach((t)=>{
+  function renderTasks(containerEl, predicate){
+    const list = loadTasks().filter(predicate);
+    containerEl.innerHTML = list.length ? '' : '<div style="color:#666;font-size:12px">Keine Aufgaben.</div>';
+    list.forEach((t)=>{
       const row = document.createElement('div'); row.className = 'task-item';
       row.innerHTML = `
         <input type="checkbox" ${t.done?'checked':''} data-id="${t.id||''}" style="transform:scale(1.1)">
         <div style="flex:1">
           <div class="title">${t.title}</div>
-          ${t.date ? `<div style=\\"font-size:11px;color:#666\\">Fällig: ${t.date}</div>` : ''}
+          ${t.date ? `<div style=\"font-size:11px;color:#666\">Fällig: ${t.date}</div>` : ''}
         </div>`;
       row.querySelector('input').addEventListener('change',(e)=>{
         const all = loadTasks(); const idx = all.findIndex(x=>(x.id||'')===(t.id||''));
-        if(idx>-1){all[idx].done=e.target.checked;saveTasks(all);}
+        if(idx>-1){all[idx].done=e.target.checked;saveTasks(all);}  
       });
-      tasksTodayEl.appendChild(row);
+      containerEl.appendChild(row);
     });
+  }
+
+  function refreshTasks(){
+    renderTasks(tasksTodayEl, t => (t.date||TODAY_ISO) === TODAY_ISO);
+    renderTasks(tasksTomorrowEl, t => t.date === TOMORROW_ISO);
   }
 
   form.addEventListener('submit',(e)=>{
     e.preventDefault();
-    const title=titleInput.value.trim(); if(!title) return;
-    const all=loadTasks(); all.unshift({id:String(Date.now()),title,date:null,done:false});
-    saveTasks(all); titleInput.value=''; renderTasksToday();
+    const title = titleInput.value.trim(); if(!title) return;
+    const date  = (dateInput.value||'').trim();
+    const all = loadTasks();
+    all.unshift({ id:String(Date.now()), title, date: date || null, done:false });
+    saveTasks(all);
+    titleInput.value=''; dateInput.value='';
+    refreshTasks();
   });
 
-  renderTasksToday();
+  refreshTasks();
 
-  // Stundenplan HEUTE (Beispiel)
-  const stHeute=document.getElementById('stundenplan-heute');
-  const testLessons=[
+  // Stundenplan HEUTE & MORGEN (Beispielwerte – werden später durch echte Daten ersetzt)
+  const stHeute = document.getElementById('stundenplan-heute');
+  const stMorgen = document.getElementById('stundenplan-morgen');
+  const testLessonsToday = [
     {time:'08:00–08:45',subject:'Mathe',room:'101',cls:'fach-mathe'},
     {time:'09:00–09:45',subject:'Englisch',room:'204',cls:'fach-englisch'},
     {time:'10:00–10:45',subject:'Deutsch',room:'112',cls:'fach-deutsch'}
   ];
-  stHeute.innerHTML=testLessons.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
+  const testLessonsTomorrow = [
+    {time:'08:00–08:45',subject:'Deutsch',room:'101',cls:'fach-deutsch'},
+    {time:'09:00–09:45',subject:'Mathe',room:'204',cls:'fach-mathe'},
+    {time:'10:00–10:45',subject:'Sport',room:'Halle',cls:'fach-sport'}
+  ];
+  stHeute.innerHTML  = testLessonsToday.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
+  stMorgen.innerHTML = testLessonsTomorrow.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
 </script>
 </body>
 </html>
