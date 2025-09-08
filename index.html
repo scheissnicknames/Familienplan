@@ -125,7 +125,21 @@
   function toISO(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
   function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
   function buildBase(params){ const base='https://calendar.google.com/calendar/embed?'; const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2']; return base + [...common, ...params].join('&'); }
-  function urlAgendaDay(calIds, ymd){ const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`); return buildBase(['mode=AGENDA',`dates=${ymd}/${ymd}`,...srcs]); }
+  function urlAgendaDay(calIds, ymd){
+    // Google Embed erwartet ein Intervall; wir geben den Folgetag als exklusives Ende mit
+    const d = ymd;
+    const year = parseInt(d.slice(0,4),10);
+    const month = parseInt(d.slice(4,6),10)-1;
+    const day = parseInt(d.slice(6,8),10);
+    const start = new Date(year, month, day);
+    const end = new Date(start); end.setDate(start.getDate()+1);
+    const endY = end.getFullYear();
+    const endM = String(end.getMonth()+1).padStart(2,'0');
+    const endD = String(end.getDate()).padStart(2,'0');
+    const endYMD = `${endY}${endM}${endD}`;
+    const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`);
+    return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,...srcs]);
+  }`); return buildBase(['mode=AGENDA',`dates=${ymd}/${ymd}`,...srcs]); }
   function urlWeek(calIds){ const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`); return buildBase(['mode=WEEK',...srcs]); }
 
   const now = new Date();
@@ -175,11 +189,19 @@
 
   function refreshAll(){
     const d = computeDates();
+    // Setze Fallback-Iframes vorab, damit immer etwas sichtbar ist
+    const todayIframeBox = document.getElementById('valentin-today-fallback');
+    const todayIframe = document.getElementById('valentin-today');
+    const tmrIframeBox = document.getElementById('valentin-tomorrow-fallback');
+    const tmrIframe = document.getElementById('valentin-tomorrow');
+    if(todayIframe){ todayIframe.src = urlAgendaDay([CAL.VALENTIN], d.TODAY_YMD); todayIframeBox.style.display='block'; }
+    if(tmrIframe){ tmrIframe.src = urlAgendaDay([CAL.VALENTIN], d.TOMORROW_YMD); tmrIframeBox.style.display='block'; }
+
     loadDayEvents(
       document.getElementById('valentin-today-list'),
       document.getElementById('valentin-today-status'),
-      document.getElementById('valentin-today-fallback'),
-      document.getElementById('valentin-today'),
+      todayIframeBox,
+      todayIframe,
       CAL.VALENTIN,
       d.TODAY_ISO,
       d.TODAY_YMD
@@ -187,15 +209,15 @@
     loadDayEvents(
       document.getElementById('valentin-tomorrow-list'),
       document.getElementById('valentin-tomorrow-status'),
-      document.getElementById('valentin-tomorrow-fallback'),
-      document.getElementById('valentin-tomorrow'),
+      tmrIframeBox,
+      tmrIframe,
       CAL.VALENTIN,
       d.TOMORROW_ISO,
       d.TOMORROW_YMD
     );
-    // Optional: Woche neu laden (Cache-Busting), damit kurzfristige Änderungen sichtbar werden
     const week = document.getElementById('combined-week');
     week.src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]) + `&v=${Date.now()}`;
+  }`;
   }
 
   // Initial laden
