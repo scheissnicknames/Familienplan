@@ -5,56 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Familien- & Wochenplaner</title>
   <style>
-    :root{
-      --bg:#f5f6fa; --card:#ffffff; --primary:#3949ab; --muted:#e8eaf6; --radius:18px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:#222;display:flex;flex-direction:column}
-    header{background:var(--primary);color:#fff;padding:10px 16px;text-align:center;font-weight:600;letter-spacing:.2px}
-    .wrap{padding:12px;display:grid;gap:12px}
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.08);padding:10px}
-    .card h3{margin:0 0 8px 6px;font-size:15px;color:#333}
+    :root{ --bg:#f5f6fa; --card:#ffffff; --primary:#3949ab; --radius:18px; }
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{ margin:0; background:var(--bg); font-family:system-ui,Arial,sans-serif; color:#222; display:flex; flex-direction:column }
+    header{ background:var(--primary); color:#fff; padding:10px 16px; text-align:center; font-weight:600; letter-spacing:.2px }
+    .wrap{ padding:12px; display:grid; gap:12px }
+    .card{ background:var(--card); border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,.08); padding:10px }
+    .card h3{ margin:0 0 8px 6px; font-size:15px; color:#333 }
 
-    /* Grids */
-    .top-grid{display:grid;gap:12px;grid-template-columns: 1fr 1fr;align-items:stretch}
-    .mid-grid,.bottom-grid{display:grid;gap:12px;grid-template-columns: 1fr}
+    .top-grid{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; align-items:stretch }
+    @media (max-width:900px){ .top-grid{ grid-template-columns:1fr } }
 
-    /* Tabellen */
-    table{border-collapse:collapse;width:100%}
-    th,td{padding:6px;border:1px solid #e5e5e5;text-align:center;font-size:13px}
-    thead tr{background:#e8eaf6}
-    .fach-mathe{background:#bbdefb}
-    .fach-deutsch{background:#c8e6c9}
-    .fach-englisch{background:#ffe0b2}
-    .fach-sport{background:#ffccbc}
-    .fach-kunst{background:#f8bbd0}
+    table{ border-collapse:collapse; width:100% }
+    th,td{ padding:6px; border:1px solid #e5e5e5; text-align:center; font-size:13px }
+    thead tr{ background:#e8eaf6 }
+    .fach-mathe{ background:#bbdefb } .fach-deutsch{ background:#c8e6c9 }
+    .fach-englisch{ background:#ffe0b2 } .fach-sport{ background:#ffccbc } .fach-kunst{ background:#f8bbd0 }
 
-    /* Iframe wrappers */
-    .iframe-wrap{border:1px solid #eee;border-radius:10px;overflow:hidden}
-    iframe{display:block;width:100%;border:0}
-
-    @media (max-width:900px){.top-grid{grid-template-columns:1fr}}
+    .iframe-wrap{ border:1px solid #eee; border-radius:10px; overflow:hidden }
+    iframe{ display:block; width:100%; border:0 }
   </style>
 </head>
 <body>
 <header>📅 Familien- & Wochenplaner</header>
 <div class="wrap">
 
-  <!-- ===== OBERER BEREICH ===== -->
+  <!-- OBERER BEREICH -->
   <div class="top-grid">
-    <!-- Spalte 1: HEUTE – Valentin: Stundenplan & Termine -->
+    <!-- HEUTE – Valentin -->
     <section class="card">
       <h3>Heute · Valentin – Stundenplan & Termine</h3>
       <div style="display:grid;gap:6px;grid-template-rows:auto auto">
+        <!-- Stundenplan HEUTE -->
         <div class="iframe-wrap" style="padding:6px">
           <table>
-            <thead>
-              <tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr>
-            </thead>
+            <thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
             <tbody id="stundenplan-heute"></tbody>
           </table>
         </div>
+        <!-- Termine HEUTE -->
         <div class="iframe-wrap" style="padding:6px">
           <div style="font-weight:600;margin:2px 0 6px 0">Termine · Heute</div>
           <ul id="valentin-today-list" style="list-style:none;margin:0;padding:0"></ul>
@@ -66,18 +56,18 @@
       </div>
     </section>
 
-    <!-- Spalte 2: MORGEN – Valentin -->
+    <!-- MORGEN – Valentin -->
     <section class="card">
       <h3>Morgen · Valentin – Stundenplan & Termine</h3>
       <div style="display:grid;gap:6px;grid-template-rows:auto auto">
+        <!-- Stundenplan MORGEN -->
         <div class="iframe-wrap" style="padding:6px">
           <table>
-            <thead>
-              <tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr>
-            </thead>
+            <thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
             <tbody id="stundenplan-morgen"></tbody>
           </table>
         </div>
+        <!-- Termine MORGEN -->
         <div class="iframe-wrap" style="padding:6px">
           <div style="font-weight:600;margin:2px 0 6px 0">Termine · Morgen</div>
           <ul id="valentin-tomorrow-list" style="list-style:none;margin:0;padding:0"></ul>
@@ -90,20 +80,18 @@
     </section>
   </div>
 
-  <!-- ===== MITTLERER BEREICH: FIXER STUNDENPLAN ===== -->
+  <!-- FIXER STUNDENPLAN -->
   <section class="card">
     <h3>Fixer Stundenplan (Schuljahr)</h3>
     <div style="overflow:auto">
       <table>
-        <thead>
-          <tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr>
-        </thead>
-        <tbody id="stundenplan-fix"><!-- Hier bitte die echten Stundenplandaten eintragen --></tbody>
+        <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
+        <tbody id="stundenplan-fix"><!-- hier später echte Daten eintragen --></tbody>
       </table>
     </div>
   </section>
 
-  <!-- ===== UNTERER BEREICH: Zusammengefasste Übersicht ===== -->
+  <!-- ZUSAMMENGEFASSTE WOCHE -->
   <section class="card">
     <h3>Woche · Dienstplan + Sonstige Termine + Geburtstage + Valentin</h3>
     <div class="iframe-wrap"><iframe id="combined-week" height="300" loading="lazy"></iframe></div>
@@ -112,8 +100,10 @@
 </div>
 
 <script>
+  // Apps Script Web-App (liefert JSON-Events)
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
 
+  // Kalender-IDs
   const CAL = {
     VALENTIN: '057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
     GENERAL:  'gabstaschill@gmail.com',
@@ -121,130 +111,119 @@
     BDAY:     'addressbook#contacts@group.v.calendar.google.com'
   };
 
-  function toYMD(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return `${y}${m}${da}`; }
-  function toISO(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
+  // Helpers
   function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
-  function buildBase(params){ const base='https://calendar.google.com/calendar/embed?'; const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2']; return base + [...common, ...params].join('&'); }
+  function buildBase(params){
+    const base='https://calendar.google.com/calendar/embed?';
+    const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
+    return base + [...common, ...params].join('&');
+  }
+  function urlWeek(calIds){
+    const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`);
+    return buildBase(['mode=WEEK', ...srcs]);
+  }
   function urlAgendaDay(calIds, ymd){
-    // Google Embed erwartet ein Intervall; wir geben den Folgetag als exklusives Ende mit
-    const d = ymd;
-    const year = parseInt(d.slice(0,4),10);
-    const month = parseInt(d.slice(4,6),10)-1;
-    const day = parseInt(d.slice(6,8),10);
+    // Intervall: [Tag, Folgetag) – damit Google-Embed wirklich nur den einen Tag zeigt
+    const year = +ymd.slice(0,4), month = +ymd.slice(4,6)-1, day = +ymd.slice(6,8);
     const start = new Date(year, month, day);
     const end = new Date(start); end.setDate(start.getDate()+1);
-    const endY = end.getFullYear();
-    const endM = String(end.getMonth()+1).padStart(2,'0');
-    const endD = String(end.getDate()).padStart(2,'0');
-    const endYMD = `${endY}${endM}${endD}`;
+    const endYMD = `${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
     const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`);
-    return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,...srcs]);
-  }`); return buildBase(['mode=AGENDA',`dates=${ymd}/${ymd}`,...srcs]); }
-  function urlWeek(calIds){ const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`); return buildBase(['mode=WEEK',...srcs]); }
+    return buildBase(['mode=AGENDA', `dates=${ymd}/${endYMD}`, ...srcs]);
+  }
+  function computeDates(){
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
+    const TODAY_ISO = `${y}-${m}-${d}`, TODAY_YMD = `${y}${m}${d}`;
+    const tmr = new Date(now); tmr.setDate(now.getDate()+1);
+    const ty = tmr.getFullYear(), tm = String(tmr.getMonth()+1).padStart(2,'0'), td = String(tmr.getDate()).padStart(2,'0');
+    const TOMORROW_ISO = `${ty}-${tm}-${td}`, TOMORROW_YMD = `${ty}${tm}${td}`;
+    return { TODAY_ISO, TODAY_YMD, TOMORROW_ISO, TOMORROW_YMD };
+  }
 
-  const now = new Date();
-  const TODAY_YMD = toYMD(now);
-  const TOMORROW_DATE = new Date(now); TOMORROW_DATE.setDate(now.getDate()+1);
-  const TOMORROW_YMD = toYMD(TOMORROW_DATE);
-  const TODAY_ISO = toISO(now);
-  const TOMORROW_ISO = toISO(TOMORROW_DATE);
-
-  // Fallback-Iframes immer setzen, damit bei Script-Ausfall etwas sichtbar ist
-  document.getElementById('valentin-today').src = urlAgendaDay([CAL.VALENTIN], TODAY_YMD);
-  document.getElementById('valentin-tomorrow').src = urlAgendaDay([CAL.VALENTIN], TOMORROW_YMD);
-
-  document.getElementById('combined-week').src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]);
-
-  // Stundenplan Beispiel
+  // Stundenplan (Demo – ersetze später)
   const stHeute = document.getElementById('stundenplan-heute');
   const stMorgen = document.getElementById('stundenplan-morgen');
-  const testLessonsToday = [
+  const demoToday = [
     {time:'08:00–08:45',subject:'Mathe',room:'101',cls:'fach-mathe'},
     {time:'09:00–09:45',subject:'Englisch',room:'204',cls:'fach-englisch'},
     {time:'10:00–10:45',subject:'Deutsch',room:'112',cls:'fach-deutsch'}
   ];
-  const testLessonsTomorrow = [
+  const demoTomorrow = [
     {time:'08:00–08:45',subject:'Deutsch',room:'101',cls:'fach-deutsch'},
     {time:'09:00–09:45',subject:'Mathe',room:'204',cls:'fach-mathe'},
     {time:'10:00–10:45',subject:'Sport',room:'Halle',cls:'fach-sport'}
   ];
-  stHeute.innerHTML  = testLessonsToday.map(l=>`<tr><td>${l.time}</td><td class=\"${l.cls}\">${l.subject}</td><td>${l.room}</td></tr>`).join('');
-  stMorgen.innerHTML = testLessonsTomorrow.map(l=>`<tr><td>${l.time}</td><td class=\"${l.cls}\">${l.subject}</td><td>${l.room}</td></tr>`).join('');
+  stHeute.innerHTML  = demoToday.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
+  stMorgen.innerHTML = demoTomorrow.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
 
-  async function function computeDates(){
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth()+1).padStart(2,'0');
-    const d = String(now.getDate()).padStart(2,'0');
-    const TODAY_ISO = `${y}-${m}-${d}`;
-    const TODAY_YMD = `${y}${m}${d}`;
-    const tmr = new Date(now); tmr.setDate(now.getDate()+1);
-    const ty = tmr.getFullYear();
-    const tm = String(tmr.getMonth()+1).padStart(2,'0');
-    const td = String(tmr.getDate()).padStart(2,'0');
-    const TOMORROW_ISO = `${ty}-${tm}-${td}`;
-    const TOMORROW_YMD = `${ty}${tm}${td}`;
-    return { TODAY_ISO, TODAY_YMD, TOMORROW_ISO, TOMORROW_YMD };
+  // Tages-Events via Apps Script (mit Fallback auf Tages-Iframe)
+  async function loadDayEvents(listEl, statusEl, fallbackBoxEl, fallbackIframeEl, calendarId, dayISO, dayYMD){
+    try{
+      statusEl.textContent = 'Lade Termine…';
+      const url = `${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calendarId)}&from=${dayISO}T00:00:00&to=${dayISO}T23:59:59`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      listEl.innerHTML = '';
+      if(Array.isArray(data) && data.length){
+        data.sort((a,b)=>new Date(a.start)-new Date(b.start));
+        data.forEach(ev => {
+          const li = document.createElement('li');
+          li.style.padding = '4px 0';
+          const time = (ev.allDay? 'Ganztägig' : `${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`);
+          li.innerHTML = `<div style="font-weight:600">${time} · ${ev.summary||'(ohne Titel)'}</div>${ev.location?`<div style="font-size:12px;color:#666">${ev.location}</div>`:''}`;
+          listEl.appendChild(li);
+        });
+        statusEl.textContent = '';
+        if(fallbackBoxEl) fallbackBoxEl.style.display = 'none';
+      } else {
+        statusEl.textContent = '';
+        if(fallbackBoxEl && fallbackIframeEl){
+          fallbackIframeEl.src = urlAgendaDay([calendarId], dayYMD);
+          fallbackBoxEl.style.display = 'block';
+        }
+      }
+    }catch(err){
+      statusEl.textContent = '';
+      if(fallbackBoxEl && fallbackIframeEl){
+        fallbackIframeEl.src = urlAgendaDay([calendarId], dayYMD);
+        fallbackBoxEl.style.display = 'block';
+      }
+    }
   }
 
   function refreshAll(){
     const d = computeDates();
-    // Setze Fallback-Iframes vorab, damit immer etwas sichtbar ist
-    const todayIframeBox = document.getElementById('valentin-today-fallback');
-    const todayIframe = document.getElementById('valentin-today');
-    const tmrIframeBox = document.getElementById('valentin-tomorrow-fallback');
-    const tmrIframe = document.getElementById('valentin-tomorrow');
-    if(todayIframe){ todayIframe.src = urlAgendaDay([CAL.VALENTIN], d.TODAY_YMD); todayIframeBox.style.display='block'; }
-    if(tmrIframe){ tmrIframe.src = urlAgendaDay([CAL.VALENTIN], d.TOMORROW_YMD); tmrIframeBox.style.display='block'; }
 
+    // Vorab Fallback-Iframes setzen, damit immer etwas sichtbar ist
+    const todayBox = document.getElementById('valentin-today-fallback');
+    const todayIframe = document.getElementById('valentin-today');
+    const tmrBox = document.getElementById('valentin-tomorrow-fallback');
+    const tmrIframe = document.getElementById('valentin-tomorrow');
+    if(todayIframe){ todayIframe.src = urlAgendaDay([CAL.VALENTIN], d.TODAY_YMD); todayBox.style.display='block'; }
+    if(tmrIframe){ tmrIframe.src = urlAgendaDay([CAL.VALENTIN], d.TOMORROW_YMD); tmrBox.style.display='block'; }
+
+    // Listen laden (verstecken Fallback, wenn Daten vorhanden)
     loadDayEvents(
       document.getElementById('valentin-today-list'),
       document.getElementById('valentin-today-status'),
-      todayIframeBox,
-      todayIframe,
-      CAL.VALENTIN,
-      d.TODAY_ISO,
-      d.TODAY_YMD
+      todayBox, todayIframe, CAL.VALENTIN, d.TODAY_ISO, d.TODAY_YMD
     );
     loadDayEvents(
       document.getElementById('valentin-tomorrow-list'),
       document.getElementById('valentin-tomorrow-status'),
-      tmrIframeBox,
-      tmrIframe,
-      CAL.VALENTIN,
-      d.TOMORROW_ISO,
-      d.TOMORROW_YMD
+      tmrBox, tmrIframe, CAL.VALENTIN, d.TOMORROW_ISO, d.TOMORROW_YMD
     );
+
+    // Kombinierte Woche neu setzen (kleines Cache-Busting)
     const week = document.getElementById('combined-week');
     week.src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]) + `&v=${Date.now()}`;
-  }`;
   }
 
-  // Initial laden
+  // Initial + Auto-Reload
   refreshAll();
-  // Alle 5 Minuten automatisch aktualisieren
   setInterval(refreshAll, 5 * 60 * 1000);
-  // ===== Auto-Reload alle 5 Minuten =====
-  setInterval(()=>{
-    loadDayEvents(
-      document.getElementById('valentin-today-list'),
-      document.getElementById('valentin-today-status'),
-      document.getElementById('valentin-today-fallback'),
-      document.getElementById('valentin-today'),
-      CAL.VALENTIN,
-      TODAY_ISO,
-      TODAY_YMD
-    );
-    loadDayEvents(
-      document.getElementById('valentin-tomorrow-list'),
-      document.getElementById('valentin-tomorrow-status'),
-      document.getElementById('valentin-tomorrow-fallback'),
-      document.getElementById('valentin-tomorrow'),
-      CAL.VALENTIN,
-      TOMORROW_ISO,
-      TOMORROW_YMD
-    );
-  }, 5*60*1000);
 </script>
 </body>
 </html>
