@@ -56,7 +56,7 @@
       </div>
     </section>
 
-    <!-- MORGEN – Valentin -->
+    <!-- MORGEN – Valentin (nur Liste, kein Fallback-Iframe) -->
     <section class="card">
       <h3>Morgen · Valentin – Stundenplan & Termine</h3>
       <div style="display:grid;gap:6px;grid-template-rows:auto auto">
@@ -67,14 +67,11 @@
             <tbody id="stundenplan-morgen"></tbody>
           </table>
         </div>
-        <!-- Termine MORGEN -->
+        <!-- Termine MORGEN (nur gefilterte Liste) -->
         <div class="iframe-wrap" style="padding:6px">
           <div style="font-weight:600;margin:2px 0 6px 0">Termine · Morgen</div>
           <ul id="valentin-tomorrow-list" style="list-style:none;margin:0;padding:0"></ul>
           <div id="valentin-tomorrow-status" style="margin-top:6px;color:#666;font-size:12px"></div>
-          <div id="valentin-tomorrow-fallback" style="display:none;margin-top:6px">
-            <iframe id="valentin-tomorrow" height="220" loading="lazy"></iframe>
-          </div>
         </div>
       </div>
     </section>
@@ -157,7 +154,7 @@
   stHeute.innerHTML  = demoToday.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
   stMorgen.innerHTML = demoTomorrow.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
 
-  // Tages-Events via Apps Script (mit Fallback auf Tages-Iframe)
+  // Tages-Events via Apps Script (mit optionalem Fallback auf Tages-Iframe)
   async function loadDayEvents(listEl, statusEl, fallbackBoxEl, fallbackIframeEl, calendarId, dayISO, dayYMD){
     try{
       statusEl.textContent = 'Lade Termine…';
@@ -172,7 +169,7 @@
           const li = document.createElement('li');
           li.style.padding = '4px 0';
           const time = (ev.allDay? 'Ganztägig' : `${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`);
-          li.innerHTML = `<div style="font-weight:600">${time} · ${ev.summary||'(ohne Titel)'}</div>${ev.location?`<div style="font-size:12px;color:#666">${ev.location}</div>`:''}`;
+          li.innerHTML = `<div style=\"font-weight:600\">${time} · ${ev.summary||'(ohne Titel)'}<\/div>${ev.location?`<div style=\"font-size:12px;color:#666\">${ev.location}<\/div>`:''}`;
           listEl.appendChild(li);
         });
         statusEl.textContent = '';
@@ -196,32 +193,35 @@
   function refreshAll(){
     const d = computeDates();
 
-    // Vorab Fallback-Iframes setzen, damit immer etwas sichtbar ist
+    // HEUTE: Fallback-Iframe vorab setzen (damit immer etwas sichtbar ist)
     const todayBox = document.getElementById('valentin-today-fallback');
     const todayIframe = document.getElementById('valentin-today');
-    const tmrBox = document.getElementById('valentin-tomorrow-fallback');
-    const tmrIframe = document.getElementById('valentin-tomorrow');
     if(todayIframe){ todayIframe.src = urlAgendaDay([CAL.VALENTIN], d.TODAY_YMD); todayBox.style.display='block'; }
-    if(tmrIframe){ tmrIframe.src = urlAgendaDay([CAL.VALENTIN], d.TOMORROW_YMD); tmrBox.style.display='block'; }
 
-    // Listen laden (verstecken Fallback, wenn Daten vorhanden)
+    // Listen laden (MORGEN ohne Fallback → garantiert nur Liste)
     loadDayEvents(
       document.getElementById('valentin-today-list'),
       document.getElementById('valentin-today-status'),
-      todayBox, todayIframe, CAL.VALENTIN, d.TODAY_ISO, d.TODAY_YMD
+      todayBox, todayIframe,
+      CAL.VALENTIN,
+      d.TODAY_ISO,
+      d.TODAY_YMD
     );
     loadDayEvents(
       document.getElementById('valentin-tomorrow-list'),
       document.getElementById('valentin-tomorrow-status'),
-      tmrBox, tmrIframe, CAL.VALENTIN, d.TOMORROW_ISO, d.TOMORROW_YMD
+      null, null,
+      CAL.VALENTIN,
+      d.TOMORROW_ISO,
+      d.TOMORROW_YMD
     );
 
-    // Kombinierte Woche neu setzen (kleines Cache-Busting)
+    // Kombinierte Woche neu setzen (mit leichtem Cache-Busting)
     const week = document.getElementById('combined-week');
     week.src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]) + `&v=${Date.now()}`;
   }
 
-  // Initial + Auto-Reload
+  // Initial + Auto-Reload alle 5 Minuten
   refreshAll();
   setInterval(refreshAll, 5 * 60 * 1000);
 </script>
