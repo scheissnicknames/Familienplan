@@ -133,6 +133,10 @@
   const TODAY_ISO = toISO(now);
   const TOMORROW_ISO = toISO(TOMORROW_DATE);
 
+  // Fallback-Iframes immer setzen, damit bei Script-Ausfall etwas sichtbar ist
+  document.getElementById('valentin-today').src = urlAgendaDay([CAL.VALENTIN], TODAY_YMD);
+  document.getElementById('valentin-tomorrow').src = urlAgendaDay([CAL.VALENTIN], TOMORROW_YMD);
+
   document.getElementById('combined-week').src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]);
 
   // Stundenplan Beispiel
