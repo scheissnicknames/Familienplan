@@ -46,9 +46,8 @@
     /* Fixer Stundenplan Thumbnail + Modal */
     .fixed-thumb{position:fixed;right:10px;top:50%;transform:translateY(-50%);
       background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;
-      padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer;z-index:50}
-    .fixed-thumb .mini{width:220px;max-height:160px;overflow:hidden;border-radius:8px}
-    .fixed-thumb table{font-size:10px}
+      padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer;z-index:50;user-select:none}
+    .fixed-thumb .label{font-weight:800;letter-spacing:.3px}
     .fixed-thumb .hint{font-size:10px;opacity:.7;text-align:center;margin-top:6px}
 
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
@@ -58,6 +57,12 @@
     .close-x{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;cursor:pointer}
 
     .note{font-size:12px;color:#cbd5e1;opacity:.8;margin-top:6px}
+    .agenda-list{list-style:none;margin:8px 0 0 0;padding:0}
+    .agenda-day{margin:10px 0 0 0;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
+    .agenda-day h4{margin:0 0 6px 0;font-size:13px;opacity:.9}
+    .agenda-item{padding:4px 0;font-size:13px}
+    .muted{color:#9ca3af}
+    .error{color:#fca5a5;font-size:12px}
   </style>
 </head>
 <body>
@@ -94,14 +99,20 @@
     </section>
   </div>
 
-  <!-- Woche (kombiniert) → Standardansicht AGENDA (7 Tage) -->
+  <!-- Agenda 7 Tage (eigene Liste) -->
   <section class="card">
     <h3>Agenda · nächste 7 Tage · alle Kalender</h3>
-    <div class="iframe-wrap"><iframe id="combined-week" height="340"></iframe></div>
-    <div class="note">Falls „Berechtigung erforderlich“ erscheint: Stelle sicher, dass das Tablet im Google-Konto angemeldet ist, das Zugriff auf die Kalender hat – oder mache die betreffenden Kalender öffentlich (nicht empfohlen).</div>
+    <div class="iframe-wrap" style="padding:10px">
+      <div id="combined-status" class="muted">Lade Agenda…</div>
+      <div id="combined-errors"></div>
+      <ul id="combined-agenda" class="agenda-list"></ul>
+    </div>
+    <div class="note">
+      Lädt serverseitig über dein Apps Script (kein Google-Login am Tablet nötig). Wenn Fehler angezeigt werden, fehlen dem Script-Account vermutlich die Leserechte auf einen der Kalender oder CORS ist nicht aktiv.
+    </div>
   </section>
 
-  <!-- Smart Home Widgets (Intent-Buttons) -->
+  <!-- Smart Home Widgets (Intent/JS) -->
   <section class="card">
     <h3>Smart Home</h3>
     <div class="widgets" id="widgets"></div>
@@ -111,12 +122,7 @@
 
 <!-- Fixer Stundenplan Thumbnail + Modal (ausklappbar) -->
 <div class="fixed-thumb" id="fixedThumb" title="Fixen Stundenplan vergrößern">
-  <div class="mini">
-    <table>
-      <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
-      <tbody id="stundenplan-fix-thumb"></tbody>
-    </table>
-  </div>
+  <div class="label">Stundenplan</div>
   <div class="hint">Tippen zum Vergrößern</div>
 </div>
 <div class="modal" id="fixedModal">
@@ -133,7 +139,7 @@
 </div>
 
 <script>
-// ===== KONFIG =====
+/* ================== KONFIG ================== */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
 const CAL = {
   VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
@@ -141,55 +147,41 @@ const CAL = {
   DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com',
   BDAY:'addressbook#contacts@group.v.calendar.google.com'
 };
-
-// ===== Smart Home: App-Intents (öffnet Apps direkt in Fully) =====
+/* Apps öffnen – bevorzugt über Fully JS-API, sonst Intent-Fallback
+   Fully: Settings → Web Content → Enable JavaScript Interface (Haken)
+          Settings → Web Content → Open URL Schemes in Other Apps (Haken) */
+const APP_LINKS = {
+  hue:   {pkg:'com.philips.lighting.hue2', intent:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end'},
+  sonos: {pkg:'com.sonos.acr2',            intent:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end'},
+  tado:  {pkg:'com.tado',                   intent:'intent://com.tado/#Intent;scheme=app;package=com.tado;end'},
+  eufy:  {pkg:'com.oceanwing.battery.cam',  intent:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end'}
+};
 const ACTIONS = [
-  { title:'Philips Hue', items:[
-      {label:'Hue App öffnen', url:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end'}
-    ] },
-  { title:'Sonos', items:[
-      {label:'Sonos App öffnen', url:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end'}
-    ] },
-  { title:'tado°', items:[
-      {label:'tado° App öffnen', url:'intent://com.tado/#Intent;scheme=app;package=com.tado;end'}
-    ] },
-  { title:'eufy Security', items:[
-      {label:'eufy App öffnen', url:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end'}
-    ] }
+  { title:'Philips Hue',     items:[{label:'Hue App öffnen',  app:'hue'}] },
+  { title:'Sonos',           items:[{label:'Sonos App öffnen',app:'sonos'}] },
+  { title:'tado°',           items:[{label:'tado° App öffnen',app:'tado'}] },
+  { title:'eufy Security',   items:[{label:'eufy App öffnen', app:'eufy'}] }
 ];
 
-// ===== Helpers =====
-function buildBase(params){
-  const base='https://calendar.google.com/calendar/embed?';
-  const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
-  return base+[...common,...params].join('&');
+/* ================== Helpers ================== */
+function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
+function ymd(d){ return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dayKey(d){ return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function launchApp(key){
+  const cfg = APP_LINKS[key]; if(!cfg) return;
+  try{
+    if(window.fully && typeof fully.startApplication==='function'){
+      fully.startApplication(cfg.pkg); // bevorzugt
+      return;
+    }
+  }catch(err){ /* ignore and try fallback */ }
+  // Fallback per Intent-URL
+  window.location.href = cfg.intent;
 }
-function urlAgendaDay(calId, ymd){
-  // [Tag, Folgetag)
-  const y=+ymd.slice(0,4), m=+ymd.slice(4,6)-1, d=+ymd.slice(6,8);
-  const start=new Date(y,m,d); const end=new Date(start); end.setDate(start.getDate()+1);
-  const endYMD=`${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
-  return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,'src='+encodeURIComponent(calId)]);
-}
-function urlAgendaRange(calIds, startYMD, endYMDExcl){
-  // mehrere Kalender, AGENDA-Range [start, end)
-  const srcs = calIds.map(id=>'src='+encodeURIComponent(id));
-  return buildBase(['mode=AGENDA', `dates=${startYMD}/${endYMDExcl}`, ...srcs]);
-}
-function computeDates(){
-  const now=new Date();
-  const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
-  const TODAY_ISO=`${y}-${m}-${d}`, TODAY_YMD=`${y}${m}${d}`;
-  const t=new Date(now); t.setDate(now.getDate()+7); // 7 Tage Range
-  const END_YMD=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-  const tmr=new Date(now); tmr.setDate(now.getDate()+1);
-  const TOMORROW_ISO=`${tmr.getFullYear()}-${String(tmr.getMonth()+1).padStart(2,'0')}-${String(tmr.getDate()).padStart(2,'0')}`;
-  const TOMORROW_YMD=`${tmr.getFullYear()}${String(tmr.getMonth()+1).padStart(2,'0')}${String(tmr.getDate()).padStart(2,'0')}`;
-  return {TODAY_ISO,TODAY_YMD,END_YMD,TOMORROW_ISO,TOMORROW_YMD};
-}
-function toTimeStr(d){return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
 
-async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,iso,ymd){
+/* ================== Heute/Morgen (Valentin) ================== */
+async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,iso,ymdStr){
   try{
     statusEl.textContent='Lade Termine…';
     const res=await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calId)}&from=${iso}T00:00:00&to=${iso}T23:59:59`);
@@ -205,80 +197,167 @@ async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,is
       statusEl.textContent=''; if(fallbackBox) fallbackBox.style.display='none';
     } else {
       statusEl.textContent='Keine Termine.';
-      if(fallbackBox && fallbackIframe){ fallbackIframe.src=urlAgendaDay(calId, ymd); fallbackBox.style.display='block'; }
+      if(fallbackBox && fallbackIframe){ fallbackIframe.src = googleAgendaDay(calId, ymdStr); fallbackBox.style.display='block'; }
     }
   }catch(e){
     statusEl.textContent='Fehler beim Laden.';
-    if(fallbackBox && fallbackIframe){ fallbackIframe.src=urlAgendaDay(calId, ymd); fallbackBox.style.display='block'; }
+    if(fallbackBox && fallbackIframe){ fallbackIframe.src = googleAgendaDay(calId, ymdStr); fallbackBox.style.display='block'; }
   }
 }
 
-function refreshAll(){
-  const d=computeDates();
-  // Heute: Fallback-Iframe vorab anzeigen
-  const todayBox=document.getElementById('valentin-today-fallback');
-  const todayIframe=document.getElementById('valentin-today');
-  if(todayIframe){ todayIframe.src=urlAgendaDay(CAL.VALENTIN,d.TODAY_YMD); todayBox.style.display='block'; }
-  // Listen
-  loadDayEvents(
-    document.getElementById('valentin-today-list'),
-    document.getElementById('valentin-today-status'),
-    todayBox, todayIframe,
-    CAL.VALENTIN, d.TODAY_ISO, d.TODAY_YMD
-  );
-  loadDayEvents(
-    document.getElementById('valentin-tomorrow-list'),
-    document.getElementById('valentin-tomorrow-status'),
-    null, null,
-    CAL.VALENTIN, d.TOMORROW_ISO, d.TOMORROW_YMD
-  );
-  // Kombinierte Agenda 7 Tage
-  const combined=document.getElementById('combined-week');
-  combined.src = urlAgendaRange([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN], d.TODAY_YMD, d.END_YMD) + `&v=${Date.now()}`;
+function googleAgendaDay(calId, ymdStr){
+  const y=+ymdStr.slice(0,4), m=+ymdStr.slice(4,6)-1, d=+ymdStr.slice(6,8);
+  const start=new Date(y,m,d); const end=new Date(start); end.setDate(start.getDate()+1);
+  const endYMD = ymd(end);
+  const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
+  return 'https://calendar.google.com/calendar/embed?' + [...common, 'mode=AGENDA', `dates=${ymdStr}/${endYMD}`, 'src='+encodeURIComponent(calId)].join('&');
 }
 
-// Demo Stundenpläne (ersetzbar durch echte Daten)
-const stHeute=document.getElementById('stundenplan-heute');
-stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
-<tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
-<tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
-const stMorgen=document.getElementById('stundenplan-morgen');
-stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
-<tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
-<tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
+/* ================== Kombinierte 7-Tage-Agenda (mit Fehleranzeige) ================== */
+async function loadCombinedAgenda(){
+  const status = document.getElementById('combined-status');
+  const list   = document.getElementById('combined-agenda');
+  const errors = document.getElementById('combined-errors');
+  status.textContent = 'Lade Agenda…'; list.innerHTML = ''; errors.innerHTML='';
 
-// Fixer Stundenplan (Thumbnail & Modal)
-const fixThumbBody=document.getElementById('stundenplan-fix-thumb');
-const fixBody=document.getElementById('stundenplan-fix');
+  const start = new Date(); start.setHours(0,0,0,0);
+  const end   = new Date(start); end.setDate(end.getDate()+7); end.setHours(23,59,59,999);
+
+  const CALS = [
+    {id:CAL.GENERAL,  label:'Allgemein'},
+    {id:CAL.DIENST,   label:'Dienstplan'},
+    {id:CAL.BDAY,     label:'Geburtstage'},
+    {id:CAL.VALENTIN, label:'Valentin'}
+  ];
+  const all = [];
+  for (const c of CALS){
+    try{
+      const res = await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(c.id)}&from=${isoDate(start)}T00:00:00&to=${isoDate(end)}T23:59:59`);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      if(Array.isArray(data)) data.forEach(e => all.push({...e, _cal: c.label}));
+    }catch(err){
+      const p=document.createElement('div'); p.className='error';
+      p.textContent = `⚠️ Kein Zugriff auf Kalender „${c.label}“ (prüfe Freigabe/Deploy/CORS).`;
+      errors.appendChild(p);
+    }
+  }
+
+  // Gruppieren nach Datum
+  const byDay = {};
+  for(let i=0;i<8;i++){ const d = new Date(start); d.setDate(start.getDate()+i); byDay[dayKey(d)] = { date: new Date(d), items: [] }; }
+  all.forEach(ev=>{
+    const d = new Date(ev.start);
+    const key = dayKey(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+    if(byDay[key]) byDay[key].items.push(ev);
+  });
+
+  const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  Object.values(byDay).sort((a,b)=>a.date-b.date).forEach(group=>{
+    const h = document.createElement('li'); h.className='agenda-day';
+    const label = `${dayNames[group.date.getDay()]} ${group.date.toLocaleDateString('de-DE')}`;
+    h.innerHTML = `<h4>${label}</h4>`;
+    if(group.items.length===0){
+      const li = document.createElement('div'); li.className='agenda-item muted'; li.textContent='—'; h.appendChild(li);
+    }else{
+      group.items.sort((a,b)=>new Date(a.start)-new Date(b.start));
+      group.items.forEach(ev=>{
+        const li = document.createElement('div'); li.className='agenda-item';
+        const t = ev.allDay ? 'Ganztägig' : `${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`;
+        li.textContent = `${t} · ${ev.summary||'(ohne Titel)'} (${ev._cal})`;
+        h.appendChild(li);
+      });
+    }
+    list.appendChild(h);
+  });
+
+  status.textContent = '';
+}
+
+/* ================== Fixed Stundenplan (Demo) ================== */
 const fixedData=[
   {time:'08:00–08:45', mo:'Mathe', moCls:'fach-mathe', di:'Deutsch', diCls:'fach-deutsch', mi:'Englisch', miCls:'fach-englisch', do:'Mathe', doCls:'fach-mathe', fr:'Musik', frCls:'fach-musik'},
   {time:'09:00–09:45', mo:'Englisch', moCls:'fach-englisch', di:'Musik', diCls:'fach-musik', mi:'Deutsch', miCls:'fach-deutsch', do:'Kunst', doCls:'fach-kunst', fr:'Mathe', frCls:'fach-mathe'}
 ];
 function row(r){return `<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td><td class="${r.diCls}">${r.di}</td><td class="${r.miCls}">${r.mi}</td><td class="${r.doCls}">${r.do}</td><td class="${r.frCls}">${r.fr}</td></tr>`}
-fixThumbBody.innerHTML=fixedData.map(row).join('');
-fixBody.innerHTML=fixedData.map(row).join('');
 
-const modal=document.getElementById('fixedModal');
-const thumb=document.getElementById('fixedThumb');
-const closeBtn=document.getElementById('closeModal');
-function toggleModal(){ modal.classList.toggle('open'); }
-thumb.addEventListener('click', toggleModal);
-closeBtn.addEventListener('click', toggleModal);
-modal.addEventListener('click', (e)=>{ if(e.target===modal) toggleModal(); });
+/* ================== Init / Render ================== */
+function renderSmartHome(){
+  const widgets=document.getElementById('widgets');
+  ACTIONS.forEach(gr=>{
+    const div=document.createElement('div'); div.className='tile';
+    div.innerHTML=`<h4>${gr.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
+    gr.items.forEach(it=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=it.label; b.onclick=()=>launchApp(it.app); row.appendChild(b); });
+    div.appendChild(row); widgets.appendChild(div);
+  });
+}
 
-// Smart Home Widgets rendern
-const widgets=document.getElementById('widgets');
-function openURL(u){ window.location.href = u; }
-ACTIONS.forEach(gr=>{
-  const div=document.createElement('div'); div.className='tile';
-  div.innerHTML=`<h4>${gr.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
-  gr.items.forEach(it=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=it.label; b.onclick=()=>openURL(it.url); row.appendChild(b); });
-  div.appendChild(row); widgets.appendChild(div);
-});
+function renderStundenplaene(){
+  const stHeute=document.getElementById('stundenplan-heute');
+  stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
+  <tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
+  <tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
 
-// Initial + Auto-Reload
-refreshAll();
-setInterval(refreshAll, 5*60*1000);
+  const stMorgen=document.getElementById('stundenplan-morgen');
+  stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
+  <tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
+  <tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
+
+  const fixBody=document.getElementById('stundenplan-fix');
+  fixBody.innerHTML=fixedData.map(row).join('');
+}
+
+function refreshTodayTomorrow(){
+  const now = new Date();
+  const TODAY_ISO = isoDate(now), TODAY_YMD = ymd(now);
+  const tmr = new Date(now); tmr.setDate(now.getDate()+1);
+  const TOMORROW_ISO = isoDate(tmr), TOMORROW_YMD = ymd(tmr);
+
+  const todayBox=document.getElementById('valentin-today-fallback');
+  const todayIframe=document.getElementById('valentin-today');
+  if(todayIframe){ const url = googleAgendaDay(CAL.VALENTIN, TODAY_YMD); todayIframe.src = url; todayBox.style.display='block'; }
+
+  loadDayEvents(
+    document.getElementById('valentin-today-list'),
+    document.getElementById('valentin-today-status'),
+    todayBox, todayIframe,
+    CAL.VALENTIN, TODAY_ISO, TODAY_YMD
+  );
+  loadDayEvents(
+    document.getElementById('valentin-tomorrow-list'),
+    document.getElementById('valentin-tomorrow-status'),
+    null, null,
+    CAL.VALENTIN, TOMORROW_ISO, TOMORROW_YMD
+  );
+}
+
+function wireFixedModal(){
+  const modal=document.getElementById('fixedModal');
+  const thumb=document.getElementById('fixedThumb');
+  const closeBtn=document.getElementById('closeModal');
+  function toggleModal(){ modal.classList.toggle('open'); }
+  thumb.addEventListener('click', toggleModal);
+  closeBtn.addEventListener('click', toggleModal);
+  modal.addEventListener('click', (e)=>{ if(e.target===modal) toggleModal(); });
+}
+
+// Init
+renderSmartHome();
+renderStundenplaene();
+wireFixedModal();
+refreshTodayTomorrow();
+loadCombinedAgenda();
+
+// Auto-Reload alle 5 Minuten
+setInterval(()=>{ refreshTodayTomorrow(); loadCombinedAgenda(); }, 5*60*1000);
 </script>
+
+<!--
+========= Apps Script Hinweise =========
+1) doGet muss JSON + CORS liefern (siehe frühere Nachricht).  
+2) Script-Account benötigt Leserechte auf: gabstaschill@gmail.com, Dienstplan-Kalender, Geburtstage, Valentin.  
+3) Nach Code-Änderungen immer: Deploy → Manage deployments → Update (Web app).  
+4) Fully: Web Content → Enable JavaScript Interface + Open URL Schemes in Other Apps aktivieren.
+-->
 </body>
 </html>
