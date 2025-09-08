@@ -4,226 +4,197 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Familien- & Wochenplaner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root{ --bg:#f5f6fa; --card:#ffffff; --primary:#3949ab; --radius:18px; }
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
-    body{ margin:0; background:var(--bg); font-family:system-ui,Arial,sans-serif; color:#222; display:flex; flex-direction:column }
-    header{ background:var(--primary); color:#fff; padding:10px 16px; text-align:center; font-weight:600; letter-spacing:.2px }
-    .wrap{ padding:12px; display:grid; gap:12px }
-    .card{ background:var(--card); border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,.08); padding:10px }
-    .card h3{ margin:0 0 8px 6px; font-size:15px; color:#333 }
-
-    .top-grid{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; align-items:stretch }
-    @media (max-width:900px){ .top-grid{ grid-template-columns:1fr } }
-
-    table{ border-collapse:collapse; width:100% }
-    th,td{ padding:6px; border:1px solid #e5e5e5; text-align:center; font-size:13px }
-    thead tr{ background:#e8eaf6 }
-    .fach-mathe{ background:#bbdefb } .fach-deutsch{ background:#c8e6c9 }
-    .fach-englisch{ background:#ffe0b2 } .fach-sport{ background:#ffccbc } .fach-kunst{ background:#f8bbd0 }
-
-    .iframe-wrap{ border:1px solid #eee; border-radius:10px; overflow:hidden }
-    iframe{ display:block; width:100%; border:0 }
+    :root{
+      --bg:#0f172a; --card:#0b1226; --card-2:#101a33;
+      --text:#e5e7eb; --primary:#7c3aed; --accent:#06b6d4;
+      --rot:#ef4444; --blau:#3b82f6; --gelb:#facc15;
+      --gruen:#22c55e; --orange:#fb923c; --braun:#8b5e34;
+    }
+    body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+    header{background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;padding:14px;text-align:center;font-weight:800}
+    .wrap{padding:14px;display:grid;gap:14px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+          border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px}
+    .card h3{margin:0 0 10px;font-size:16px}
+    .top-grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+    @media(max-width:900px){.top-grid{grid-template-columns:1fr}}
+    table{border-collapse:separate;border-spacing:0;width:100%;border-radius:12px;overflow:hidden}
+    th,td{padding:8px;border:1px solid rgba(255,255,255,.08);text-align:center;font-size:13px}
+    thead tr{background:rgba(255,255,255,.05)}
+    /* Fachfarben */
+    .fach-mathe{background:var(--rot);color:#fff}
+    .fach-deutsch{background:var(--blau);color:#fff}
+    .fach-englisch{background:var(--gelb);color:#111}
+    .fach-musik{background:var(--gruen);color:#fff}
+    .fach-kunst{background:var(--blau);color:#fff}
+    .fach-sachkunde{background:var(--orange);color:#111}
+    /* Müll */
+    .muell-gelber{background:var(--gelb);color:#111}
+    .muell-rest{background:var(--gruen);color:#fff}
+    .muell-papier{background:var(--blau);color:#fff}
+    .muell-laub{background:var(--braun);color:#fff}
+    .iframe-wrap{border:1px solid rgba(255,255,255,.08);border-radius:12px;background:var(--card-2);overflow:hidden}
+    iframe{width:100%;border:0}
+    .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+    .legend span{padding:4px 8px;border-radius:999px;font-size:11px;color:#fff}
+    /* Widgets */
+    .widgets{display:grid;gap:12px;grid-template-columns:repeat(4,1fr)}
+    @media(max-width:1200px){.widgets{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:700px){.widgets{grid-template-columns:1fr}}
+    .tile{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+          border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+    .tile h4{margin:0;font-size:14px}
+    .btnrow{display:flex;flex-wrap:wrap;gap:8px}
+    .btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+         padding:8px 10px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer}
   </style>
 </head>
 <body>
 <header>📅 Familien- & Wochenplaner</header>
 <div class="wrap">
 
-  <!-- OBERER BEREICH -->
+  <!-- Heute/Morgen -->
   <div class="top-grid">
-    <!-- HEUTE – Valentin -->
     <section class="card">
-      <h3>Heute · Valentin – Stundenplan & Termine</h3>
-      <div style="display:grid;gap:6px;grid-template-rows:auto auto">
-        <!-- Stundenplan HEUTE -->
-        <div class="iframe-wrap" style="padding:6px">
-          <table>
-            <thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
-            <tbody id="stundenplan-heute"></tbody>
-          </table>
-        </div>
-        <!-- Termine HEUTE -->
-        <div class="iframe-wrap" style="padding:6px">
-          <div style="font-weight:600;margin:2px 0 6px 0">Termine · Heute</div>
-          <ul id="valentin-today-list" style="list-style:none;margin:0;padding:0"></ul>
-          <div id="valentin-today-status" style="margin-top:6px;color:#666;font-size:12px"></div>
-          <div id="valentin-today-fallback" style="display:none;margin-top:6px">
-            <iframe id="valentin-today" height="200" loading="lazy"></iframe>
-          </div>
-        </div>
+      <h3>Heute · Valentin</h3>
+      <div class="iframe-wrap" style="padding:6px">
+        <table><thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
+        <tbody id="stundenplan-heute"></tbody></table>
+      </div>
+      <div class="iframe-wrap" style="padding:10px">
+        <strong>Termine · Heute</strong>
+        <ul id="valentin-today-list" style="list-style:none;padding:0"></ul>
+        <div id="valentin-today-status" style="font-size:12px"></div>
+        <div id="valentin-today-fallback" style="display:none"><iframe id="valentin-today" height="200"></iframe></div>
       </div>
     </section>
 
-    <!-- MORGEN – Valentin (nur Liste, kein Fallback-Iframe) -->
     <section class="card">
-      <h3>Morgen · Valentin – Stundenplan & Termine</h3>
-      <div style="display:grid;gap:6px;grid-template-rows:auto auto">
-        <!-- Stundenplan MORGEN -->
-        <div class="iframe-wrap" style="padding:6px">
-          <table>
-            <thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
-            <tbody id="stundenplan-morgen"></tbody>
-          </table>
-        </div>
-        <!-- Termine MORGEN (nur gefilterte Liste) -->
-        <div class="iframe-wrap" style="padding:6px">
-          <div style="font-weight:600;margin:2px 0 6px 0">Termine · Morgen</div>
-          <ul id="valentin-tomorrow-list" style="list-style:none;margin:0;padding:0"></ul>
-          <div id="valentin-tomorrow-status" style="margin-top:6px;color:#666;font-size:12px"></div>
-        </div>
+      <h3>Morgen · Valentin</h3>
+      <div class="iframe-wrap" style="padding:6px">
+        <table><thead><tr><th>Zeit</th><th>Fach</th><th>Raum</th></tr></thead>
+        <tbody id="stundenplan-morgen"></tbody></table>
+      </div>
+      <div class="iframe-wrap" style="padding:10px">
+        <strong>Termine · Morgen</strong>
+        <ul id="valentin-tomorrow-list" style="list-style:none;padding:0"></ul>
+        <div id="valentin-tomorrow-status" style="font-size:12px"></div>
       </div>
     </section>
   </div>
 
-  <!-- FIXER STUNDENPLAN -->
+  <!-- Fixer Stundenplan + Müll -->
   <section class="card">
-    <h3>Fixer Stundenplan (Schuljahr)</h3>
-    <div style="overflow:auto">
+    <h3>Fixer Stundenplan</h3>
+    <div class="iframe-wrap" style="padding:6px">
       <table>
         <thead><tr><th>Zeit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr></thead>
-        <tbody id="stundenplan-fix"><!-- hier später echte Daten eintragen --></tbody>
+        <tbody id="stundenplan-fix"></tbody>
       </table>
+    </div>
+    <div class="legend">
+      <span class="muell-gelber">Gelber Sack</span>
+      <span class="muell-rest">Restmüll</span>
+      <span class="muell-papier">Papier</span>
+      <span class="muell-laub">Laubsäcke</span>
     </div>
   </section>
 
-  <!-- ZUSAMMENGEFASSTE WOCHE -->
+  <!-- Woche -->
   <section class="card">
-    <h3>Woche · Dienstplan + Sonstige Termine + Geburtstage + Valentin</h3>
-    <div class="iframe-wrap"><iframe id="combined-week" height="300" loading="lazy"></iframe></div>
+    <h3>Woche · alle Kalender</h3>
+    <div class="iframe-wrap"><iframe id="combined-week" height="300"></iframe></div>
+  </section>
+
+  <!-- Smart Home Widgets -->
+  <section class="card">
+    <h3>Smart Home</h3>
+    <div class="widgets" id="widgets"></div>
   </section>
 
 </div>
 
 <script>
-  // Apps Script Web-App (liefert JSON-Events)
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
+const CAL = {
+  VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
+  GENERAL:'gabstaschill@gmail.com',
+  DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com',
+  BDAY:'addressbook#contacts@group.v.calendar.google.com'
+};
 
-  // Kalender-IDs
-  const CAL = {
-    VALENTIN: '057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
-    GENERAL:  'gabstaschill@gmail.com',
-    DIENST:   'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com',
-    BDAY:     'addressbook#contacts@group.v.calendar.google.com'
-  };
+function buildBase(params){
+  const base='https://calendar.google.com/calendar/embed?';
+  const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
+  return base+[...common,...params].join('&');
+}
+function urlWeek(ids){return buildBase(['mode=WEEK',...ids.map(i=>'src='+encodeURIComponent(i))]);}
+function urlAgendaDay(id,ymd){
+  const y=+ymd.slice(0,4),m=+ymd.slice(4,6)-1,d=+ymd.slice(6,8);
+  const start=new Date(y,m,d);const end=new Date(start);end.setDate(start.getDate()+1);
+  const endYMD=`${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
+  return buildBase(['mode=AGENDA',`dates=${ymd}/${endYMD}`,'src='+encodeURIComponent(id)]);
+}
+function computeDates(){
+  const now=new Date(), y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+  const TODAY_ISO=`${y}-${m}-${d}`, TODAY_YMD=`${y}${m}${d}`;
+  const t=new Date(now);t.setDate(now.getDate()+1);
+  const TOMORROW_ISO=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  const TOMORROW_YMD=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+  return {TODAY_ISO,TODAY_YMD,TOMORROW_ISO,TOMORROW_YMD};
+}
+function toTimeStr(d){return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
 
-  // Helpers
-  function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
-  function buildBase(params){
-    const base='https://calendar.google.com/calendar/embed?';
-    const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
-    return base + [...common, ...params].join('&');
-  }
-  function urlWeek(calIds){
-    const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`);
-    return buildBase(['mode=WEEK', ...srcs]);
-  }
-  function urlAgendaDay(calIds, ymd){
-    // Intervall: [Tag, Folgetag) – damit Google-Embed wirklich nur den einen Tag zeigt
-    const year = +ymd.slice(0,4), month = +ymd.slice(4,6)-1, day = +ymd.slice(6,8);
-    const start = new Date(year, month, day);
-    const end = new Date(start); end.setDate(start.getDate()+1);
-    const endYMD = `${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
-    const srcs = calIds.map(id=>`src=${encodeURIComponent(id)}`);
-    return buildBase(['mode=AGENDA', `dates=${ymd}/${endYMD}`, ...srcs]);
-  }
-  function computeDates(){
-    const now = new Date();
-    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-    const TODAY_ISO = `${y}-${m}-${d}`, TODAY_YMD = `${y}${m}${d}`;
-    const tmr = new Date(now); tmr.setDate(now.getDate()+1);
-    const ty = tmr.getFullYear(), tm = String(tmr.getMonth()+1).padStart(2,'0'), td = String(tmr.getDate()).padStart(2,'0');
-    const TOMORROW_ISO = `${ty}-${tm}-${td}`, TOMORROW_YMD = `${ty}${tm}${td}`;
-    return { TODAY_ISO, TODAY_YMD, TOMORROW_ISO, TOMORROW_YMD };
-  }
+async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,iso,ymd){
+  try{
+    statusEl.textContent='Lade Termine…';
+    const res=await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calId)}&from=${iso}T00:00:00&to=${iso}T23:59:59`);
+    if(!res.ok) throw new Error(res.status);
+    const data=await res.json();listEl.innerHTML='';
+    if(data.length){data.sort((a,b)=>new Date(a.start)-new Date(b.start));
+      data.forEach(ev=>{
+        const li=document.createElement('li');
+        const t=ev.allDay?'Ganztägig':`${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`;
+        li.innerHTML=`${t} · ${ev.summary||''}`;listEl.appendChild(li);
+      });statusEl.textContent='';if(fallbackBox) fallbackBox.style.display='none';
+    }else{statusEl.textContent='Keine Termine';if(fallbackBox&&fallbackIframe){fallbackIframe.src=urlAgendaDay(calId,ymd);fallbackBox.style.display='block';}}
+  }catch(e){statusEl.textContent='Fehler';if(fallbackBox&&fallbackIframe){fallbackIframe.src=urlAgendaDay(calId,ymd);fallbackBox.style.display='block';}}
+}
 
-  // Stundenplan (Demo – ersetze später)
-  const stHeute = document.getElementById('stundenplan-heute');
-  const stMorgen = document.getElementById('stundenplan-morgen');
-  const demoToday = [
-    {time:'08:00–08:45',subject:'Mathe',room:'101',cls:'fach-mathe'},
-    {time:'09:00–09:45',subject:'Englisch',room:'204',cls:'fach-englisch'},
-    {time:'10:00–10:45',subject:'Deutsch',room:'112',cls:'fach-deutsch'}
-  ];
-  const demoTomorrow = [
-    {time:'08:00–08:45',subject:'Deutsch',room:'101',cls:'fach-deutsch'},
-    {time:'09:00–09:45',subject:'Mathe',room:'204',cls:'fach-mathe'},
-    {time:'10:00–10:45',subject:'Sport',room:'Halle',cls:'fach-sport'}
-  ];
-  stHeute.innerHTML  = demoToday.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
-  stMorgen.innerHTML = demoTomorrow.map(l=>`<tr><td>${l.time}</td><td class="${l.cls}">${l.subject}</td><td>${l.room}</td></tr>`).join('');
+function refreshAll(){
+  const d=computeDates();
+  const todayBox=document.getElementById('valentin-today-fallback');
+  const todayIframe=document.getElementById('valentin-today');
+  if(todayIframe){todayIframe.src=urlAgendaDay(CAL.VALENTIN,d.TODAY_YMD);todayBox.style.display='block';}
+  loadDayEvents(document.getElementById('valentin-today-list'),document.getElementById('valentin-today-status'),todayBox,todayIframe,CAL.VALENTIN,d.TODAY_ISO,d.TODAY_YMD);
+  loadDayEvents(document.getElementById('valentin-tomorrow-list'),document.getElementById('valentin-tomorrow-status'),null,null,CAL.VALENTIN,d.TOMORROW_ISO,d.TOMORROW_YMD);
+  document.getElementById('combined-week').src=urlWeek([CAL.GENERAL,CAL.DIENST,CAL.BDAY,CAL.VALENTIN])+`&v=${Date.now()}`;
+}
 
-  // Tages-Events via Apps Script (mit optionalem Fallback auf Tages-Iframe)
-  async function loadDayEvents(listEl, statusEl, fallbackBoxEl, fallbackIframeEl, calendarId, dayISO, dayYMD){
-    try{
-      statusEl.textContent = 'Lade Termine…';
-      const url = `${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calendarId)}&from=${dayISO}T00:00:00&to=${dayISO}T23:59:59`;
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const data = await res.json();
-      listEl.innerHTML = '';
-      if(Array.isArray(data) && data.length){
-        data.sort((a,b)=>new Date(a.start)-new Date(b.start));
-        data.forEach(ev => {
-          const li = document.createElement('li');
-          li.style.padding = '4px 0';
-          const time = (ev.allDay? 'Ganztägig' : `${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`);
-          li.innerHTML = `<div style=\"font-weight:600\">${time} · ${ev.summary||'(ohne Titel)'}<\/div>${ev.location?`<div style=\"font-size:12px;color:#666\">${ev.location}<\/div>`:''}`;
-          listEl.appendChild(li);
-        });
-        statusEl.textContent = '';
-        if(fallbackBoxEl) fallbackBoxEl.style.display = 'none';
-      } else {
-        statusEl.textContent = '';
-        if(fallbackBoxEl && fallbackIframeEl){
-          fallbackIframeEl.src = urlAgendaDay([calendarId], dayYMD);
-          fallbackBoxEl.style.display = 'block';
-        }
-      }
-    }catch(err){
-      statusEl.textContent = '';
-      if(fallbackBoxEl && fallbackIframeEl){
-        fallbackIframeEl.src = urlAgendaDay([calendarId], dayYMD);
-        fallbackBoxEl.style.display = 'block';
-      }
-    }
-  }
+// Demo Stundenpläne
+const stHeute=document.getElementById('stundenplan-heute');
+stHeute.innerHTML=`<tr><td>08:00–08:45</td><td class=\"fach-mathe\">Mathe</td><td>101</td></tr>
+<tr><td>09:00–09:45</td><td class=\"fach-englisch\">Englisch</td><td>204</td></tr>
+<tr><td>10:00–10:45</td><td class=\"fach-deutsch\">Deutsch</td><td>112</td></tr>`;
+const stMorgen=document.getElementById('stundenplan-morgen');
+stMorgen.innerHTML=`<tr><td>08:00–08:45</td><td class=\"fach-deutsch\">Deutsch</td><td>101</td></tr>
+<tr><td>09:00–09:45</td><td class=\"fach-mathe\">Mathe</td><td>204</td></tr>
+<tr><td>10:00–10:45</td><td class=\"fach-musik\">Musik</td><td>Saal</td></tr>`;
 
-  function refreshAll(){
-    const d = computeDates();
+refreshAll();setInterval(refreshAll,5*60*1000);
 
-    // HEUTE: Fallback-Iframe vorab setzen (damit immer etwas sichtbar ist)
-    const todayBox = document.getElementById('valentin-today-fallback');
-    const todayIframe = document.getElementById('valentin-today');
-    if(todayIframe){ todayIframe.src = urlAgendaDay([CAL.VALENTIN], d.TODAY_YMD); todayBox.style.display='block'; }
-
-    // Listen laden (MORGEN ohne Fallback → garantiert nur Liste)
-    loadDayEvents(
-      document.getElementById('valentin-today-list'),
-      document.getElementById('valentin-today-status'),
-      todayBox, todayIframe,
-      CAL.VALENTIN,
-      d.TODAY_ISO,
-      d.TODAY_YMD
-    );
-    loadDayEvents(
-      document.getElementById('valentin-tomorrow-list'),
-      document.getElementById('valentin-tomorrow-status'),
-      null, null,
-      CAL.VALENTIN,
-      d.TOMORROW_ISO,
-      d.TOMORROW_YMD
-    );
-
-    // Kombinierte Woche neu setzen (mit leichtem Cache-Busting)
-    const week = document.getElementById('combined-week');
-    week.src = urlWeek([CAL.GENERAL, CAL.DIENST, CAL.BDAY, CAL.VALENTIN]) + `&v=${Date.now()}`;
-  }
-
-  // Initial + Auto-Reload alle 5 Minuten
-  refreshAll();
-  setInterval(refreshAll, 5 * 60 * 1000);
+// Smart Home Widgets
+const widgets=document.getElementById('widgets');
+const ACTIONS=[{title:'Philips Hue',items:[{label:'Abendlicht'},{label:'Alles aus'}]},
+               {title:'Sonos',items:[{label:'Play'},{label:'Pause'}]},
+               {title:'tado°',items:[{label:'Komfort'},{label:'Eco'}]},
+               {title:'eufy',items:[{label:'Türklingel'},{label:'Garten'}]}];
+ACTIONS.forEach(gr=>{const div=document.createElement('div');div.className='tile';
+  div.innerHTML=`<h4>${gr.title}</h4>`;const row=document.createElement('div');row.className='btnrow';
+  gr.items.forEach(it=>{const b=document.createElement('button');b.className='btn';b.textContent=it.label;row.appendChild(b);});
+  div.appendChild(row);widgets.appendChild(div);});
 </script>
 </body>
 </html>
