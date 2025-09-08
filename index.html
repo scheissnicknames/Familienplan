@@ -63,6 +63,7 @@
     .agenda-item{padding:4px 0;font-size:13px}
     .muted{color:#9ca3af}
     .error{color:#fca5a5;font-size:12px}
+    .agenda-box{max-height:220px; overflow:auto}
   </style>
 </head>
 <body>
@@ -102,7 +103,7 @@
   <!-- Agenda 7 Tage (eigene Liste) -->
   <section class="card">
     <h3>Agenda · nächste 7 Tage · alle Kalender</h3>
-    <div class="iframe-wrap" style="padding:10px">
+    <div class="iframe-wrap agenda-box" style="padding:10px">
       <div id="combined-status" class="muted">Lade Agenda…</div>
       <div id="combined-errors"></div>
       <ul id="combined-agenda" class="agenda-list"></ul>
@@ -112,7 +113,7 @@
     </div>
   </section>
 
-  <!-- Smart Home Widgets (Intent/JS) -->
+  <!-- Smart Home Widgets (Fully JS + Intent-Fallback) -->
   <section class="card">
     <h3>Smart Home</h3>
     <div class="widgets" id="widgets"></div>
@@ -144,17 +145,18 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_
 const CAL = {
   VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
   GENERAL:'gabstaschill@gmail.com',
-  DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com',
-  BDAY:'addressbook#contacts@group.v.calendar.google.com'
+  DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com'
 };
-/* Apps öffnen via intent:// Links
-   Fully: Web Content → Open URL Schemes in Other Apps = ON
-          Kiosk Mode → Allow Other Apps = ON (ggf. App-Whitelist) */
-const ACTIONS = [
-  { title:'Philips Hue',     items:[{label:'Hue App öffnen',  href:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end'}] },
-  { title:'Sonos',           items:[{label:'Sonos App öffnen',href:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end'}] },
-  { title:'tado°',           items:[{label:'tado° App öffnen',href:'intent://com.tado/#Intent;scheme=app;package=com.tado;end'}] },
-  { title:'eufy Security',   items:[{label:'eufy App öffnen', href:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end'}] }
+
+/* Apps öffnen: zuerst Fully JS (wenn verfügbar), sonst intent:// Fallback
+   Fully: Web Content → Enable JavaScript Interface = ON
+          Web Content → Open URL Schemes in Other Apps = ON
+          Kiosk Mode  → Allow Other Apps = ON (ggf. Whitelist) */
+const APPS = [
+  { title:'Philips Hue',   pkg:'com.philips.lighting.hue2', intent:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end', label:'Hue App öffnen' },
+  { title:'Sonos',         pkg:'com.sonos.acr2',            intent:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end',            label:'Sonos App öffnen' },
+  { title:'tado°',         pkg:'com.tado',                  intent:'intent://com.tado/#Intent;scheme=app;package=com.tado;end',                         label:'tado° App öffnen' },
+  { title:'eufy Security', pkg:'com.oceanwing.battery.cam', intent:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end', label:'eufy App öffnen' }
 ];
 
 /* ================== Helpers ================== */
@@ -209,7 +211,6 @@ async function loadCombinedAgenda(){
   const CALS = [
     {id:CAL.GENERAL,  label:'Allgemein'},
     {id:CAL.DIENST,   label:'Dienstplan'},
-    {id:CAL.BDAY,     label:'Geburtstage'},
     {id:CAL.VALENTIN, label:'Valentin'}
   ];
   const all = [];
@@ -267,14 +268,22 @@ function row(r){return `<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td
 /* ================== Init / Render ================== */
 function renderSmartHome(){
   const widgets=document.getElementById('widgets');
-  ACTIONS.forEach(gr=>{
+  APPS.forEach(app=>{
     const div=document.createElement('div'); div.className='tile';
-    div.innerHTML=`<h4>${gr.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
-    gr.items.forEach(it=>{ 
-      const a=document.createElement('a');
-      a.className='btn'; a.textContent=it.label; a.href=it.href; a.target='_self'; a.rel='noopener';
-      row.appendChild(a);
+    div.innerHTML=`<h4>${app.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
+
+    // Primär: Fully JS startApplication
+    const btn=document.createElement('a'); btn.className='btn'; btn.textContent=app.label; btn.href=app.intent; btn.target='_self'; btn.rel='noopener';
+    btn.addEventListener('click', (ev)=>{
+      try{
+        if(window.fully && typeof fully.startApplication==='function'){
+          fully.startApplication(app.pkg);
+          ev.preventDefault(); // App via Fully gestartet → Intent nicht mehr nötig
+        }
+      }catch(e){ /* Fallback lässt Intent weiterlaufen */ }
     });
+
+    row.appendChild(btn);
     div.appendChild(row); widgets.appendChild(div);
   });
 }
@@ -341,10 +350,9 @@ setInterval(()=>{ refreshTodayTomorrow(); loadCombinedAgenda(); }, 5*60*1000);
 
 <!--
 ========= Apps Script Hinweise =========
-1) doGet muss JSON + CORS liefern (siehe frühere Nachricht).  
-2) Script-Account benötigt Leserechte auf: gabstaschill@gmail.com, Dienstplan-Kalender, Geburtstage, Valentin.  
-3) Nach Code-Änderungen immer: Deploy → Manage deployments → Update (Web app).  
-4) Fully: Web Content → Open URL Schemes in Other Apps = ON; Kiosk Mode → Allow Other Apps = ON (ggf. App-Whitelist).
+1) doGet muss JSON + CORS liefern (siehe frühere Nachricht).
+2) Script-Account benötigt Leserechte auf: gabstaschill@gmail.com, Dienstplan-Kalender, Valentin. (Geburtstage sind entfernt.)
+3) Fully: Web Content → Enable JavaScript Interface = ON; Open URL Schemes in Other Apps = ON; Kiosk Mode → Allow Other Apps = ON.
 -->
 </body>
 </html>
