@@ -6,56 +6,31 @@
   <title>Familien- & Wochenplaner — Card-Stack</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0f172a; --card:#0b1226; --card-2:#101a33; --text:#e5e7eb; --muted:#9ca3af;
-      --border:rgba(255,255,255,.08);
-      --rot:#ef4444; --blau:#3b82f6; --gelb:#facc15; --gruen:#22c55e; --orange:#fb923c;
-      --accent:#06b6d4; --primary:#7c3aed;
-    }
+    :root{--bg:#0f172a;--card:#0b1226;--card-2:#101a33;--text:#e5e7eb;--muted:#9ca3af;--border:rgba(255,255,255,.08);--rot:#ef4444;--blau:#3b82f6;--gelb:#facc15;--gruen:#22c55e;--orange:#fb923c;--accent:#06b6d4}
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);overflow:hidden}
-
-    /* Layout */
     .wrap{display:flex;flex-direction:column;gap:12px;height:100%;padding:12px}
-
-    /* Card-Stack / Swipe */
-    .carousel{position:relative;flex:1;overflow:auto;scroll-snap-type:x mandatory;display:flex;gap:12px;padding-bottom:2px}
-    .slide{scroll-snap-align:center;flex:0 0 100%;height:100%;}
-    .card{height:100%;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
-      border:1px solid var(--border);border-radius:18px;padding:14px;display:grid;grid-template-rows:auto 1fr;gap:10px}
-
+    /* Card-Stack */
+    .carousel{position:relative;flex:1;overflow:auto;scroll-snap-type:x mandatory;display:flex;gap:12px}
+    .slide{scroll-snap-align:center;flex:0 0 100%;height:100%}
+    .card{height:100%;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;padding:14px;display:grid;grid-template-rows:auto 1fr;gap:10px}
     .hero{display:flex;align-items:center;justify-content:space-between}
-    .hero .title{font-size:22px;font-weight:800;letter-spacing:.3px}
+    .hero .title{font-size:22px;font-weight:800}
     .hero .date{font-size:14px;color:var(--muted)}
-
     .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;height:100%}
-    @media(max-width:900px){.grid{grid-template-columns:1fr;}}
-
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
     .pane{background:var(--card-2);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;flex-direction:column;min-height:0}
-    .pane h4{margin:0 0 8px 0;font-size:15px}
-    .pane .inner{flex:1;min-height:0;overflow:auto;border-radius:10px}
-
+    .pane h4{margin:0 0 8px;font-size:15px}
+    .inner{flex:1;min-height:0;overflow:auto;border-radius:10px}
     table{border-collapse:separate;border-spacing:0;width:100%;border-radius:10px;overflow:hidden}
     th,td{padding:8px;border:1px solid var(--border);text-align:center;font-size:13px}
     thead tr{background:rgba(255,255,255,.05)}
-
-    /* Fachfarben */
-    .fach-mathe{background:var(--rot);color:#fff}
-    .fach-deutsch{background:var(--blau);color:#fff}
-    .fach-englisch{background:var(--gelb);color:#111}
-    .fach-musik{background:var(--gruen);color:#fff}
-    .fach-kunst{background:var(--blau);color:#fff}
-    .fach-sachkunde{background:var(--orange);color:#111}
-
-    /* Termine-List */
+    .fach-mathe{background:var(--rot);color:#fff}.fach-deutsch{background:var(--blau);color:#fff}.fach-englisch{background:var(--gelb);color:#111}.fach-musik{background:var(--gruen);color:#fff}.fach-kunst{background:var(--blau);color:#fff}.fach-sachkunde{background:var(--orange);color:#111}
     ul.events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
     .event{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:13px}
     .status{font-size:12px;color:var(--muted);margin-top:6px}
-
-    iframe{width:100%;border:0}
-
-    /* Smart Home */
+    /* Widgets */
     .widgets{display:grid;gap:10px;grid-template-columns:repeat(4,1fr)}
     @media(max-width:1200px){.widgets{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:700px){.widgets{grid-template-columns:1fr}}
@@ -64,35 +39,22 @@
     .btnrow{display:flex;flex-wrap:wrap;gap:8px}
     .btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:8px 10px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
     .btn:active{transform:translateY(1px)}
-
-    /* Nav Arrows & Dots */
+    /* Nav */
     .nav{position:absolute;inset:0;pointer-events:none}
-    .arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(4px);
-      padding:8px;border-radius:999px;pointer-events:auto;cursor:pointer;user-select:none}
-    .arrow.left{left:8px}
-    .arrow.right{right:8px}
-    .dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
-    .dot{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.25)}
-    .dot.active{background:var(--accent)}
-
-    /* Floating Bubbles */
+    .arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);padding:8px;border-radius:999px;pointer-events:auto;cursor:pointer}
+    .arrow.left{left:8px}.arrow.right{right:8px}
+    .dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .dot{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.25)}.dot.active{background:var(--accent)}
+    /* Bubbles */
     .fixed-thumb{position:fixed;right:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer;z-index:50;user-select:none;width:110px;text-align:center}
-    .fixed-thumb .label{font-weight:800;letter-spacing:.3px}
-    .fixed-thumb .hint{font-size:10px;opacity:.7;text-align:center;margin-top:6px}
-    #fixedThumb{top:40%}
-    #monthThumb{top:55%}
-
+    .fixed-thumb .label{font-weight:800}
+    .fixed-thumb .hint{font-size:10px;opacity:.7;margin-top:6px}
+    #fixedThumb{top:40%}#monthThumb{top:55%}
     /* Modals */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
-    .modal.open{display:flex}
-    #fixedModal{z-index:110}
-    #monthModal{z-index:90}
-    .modal .dialog{position:relative;background:var(--card-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;max-width:95vw;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    .modal .dialog h3{margin:0 0 10px}
+    .modal.open{display:flex}#fixedModal{z-index:110}#monthModal{z-index:90}
+    .dialog{position:relative;background:var(--card-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;max-width:95vw;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
     .close-x{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;cursor:pointer}
-
-    /* Diagnose */
-    .diag{position:fixed;left:10px;bottom:10px;background:#0b1226;border:1px solid var(--border);border-radius:10px;padding:6px 8px;font-size:11px;opacity:.9;z-index:200}
   </style>
 </head>
 <body>
@@ -193,154 +155,102 @@
     </div>
   </div>
 
-  <!-- Diagnose -->
-  <div class="diag" id="diag">Init…</div>
-
 <script>
 /* ===== KONFIG ===== */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
-const CAL = {
-  VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',
-  GENERAL:'gabstaschill@gmail.com',
-  DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com'
-};
-
-const APPS = [
-  { title:'Philips Hue',   pkg:'com.philips.lighting.hue2', intent:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end', label:'Hue App öffnen' },
-  { title:'Sonos',         pkg:'com.sonos.acr2',            intent:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end',            label:'Sonos App öffnen' },
-  { title:'tado°',         pkg:'com.tado',                  intent:'intent://com.tado/#Intent;scheme=app;package=com.tado;end',                         label:'tado° App öffnen' },
-  { title:'eufy Security', pkg:'com.oceanwing.battery.cam', intent:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end', label:'eufy App öffnen' }
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyw8-Ns-eaFBpr_aMXYxx8RNujRoZ3X89Txu61Zqf9N_TiO1xGviCLB9hqtKnYUeBdk/exec';
+const CAL={VALENTIN:'057e175cb88528446a3b90c6e6ff1124f870e0d6b97ded0da00e1fce8e509188@group.calendar.google.com',GENERAL:'gabstaschill@gmail.com',DIENST:'emujcvc9sc89j8gi2l9kdvf1i0@group.calendar.google.com'};
+const APPS=[
+  {title:'Philips Hue',pkg:'com.philips.lighting.hue2',intent:'intent://com.philips.lighting.hue2/#Intent;scheme=app;package=com.philips.lighting.hue2;end',label:'Hue App öffnen'},
+  {title:'Sonos',pkg:'com.sonos.acr2',intent:'intent://com.sonos.acr2/#Intent;scheme=app;package=com.sonos.acr2;end',label:'Sonos App öffnen'},
+  {title:'tado°',pkg:'com.tado',intent:'intent://com.tado/#Intent;scheme=app;package=com.tado;end',label:'tado° App öffnen'},
+  {title:'eufy Security',pkg:'com.oceanwing.battery.cam',intent:'intent://com.oceanwing.battery.cam/#Intent;scheme=app;package=com.oceanwing.battery.cam;end',label:'eufy App öffnen'}
 ];
 
 /* ===== Helpers ===== */
-const $ = s => document.querySelector(s);
-function setDiag(msg){ const d=$('#diag'); if(d) d.textContent = msg; }
-function toTimeStr(d){ return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
-function ymd(d){ return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
-function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function buildGoogleEmbed(params){
-  const base='https://calendar.google.com/calendar/embed?';
-  const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
-  return base+[...common,...params].join('&');
-}
+const $=s=>document.querySelector(s);
+const toTimeStr=d=>new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const buildEmbed=p=>`https://calendar.google.com/calendar/embed?${['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2',...p].join('&')}`;
 
 /* ===== Swipe Controls ===== */
-(function swipeInit(){
-  const el = $('#carousel'); const dot0=$('#dot0'), dot1=$('#dot1');
-  const prev=$('#prev'), next=$('#next');
-  function idx(){ return Math.round(el.scrollLeft / el.clientWidth); }
-  function syncDots(){ const i = idx(); dot0.classList.toggle('active', i===0); dot1.classList.toggle('active', i===1); }
-  prev.addEventListener('click', ()=>{ el.scrollTo({left:0,behavior:'smooth'}); });
-  next.addEventListener('click', ()=>{ el.scrollTo({left:el.clientWidth,behavior:'smooth'}); });
-  el.addEventListener('scroll', ()=>{ window.requestAnimationFrame(syncDots); });
-})();
+(()=>{const el=$('#carousel'),dot0=$('#dot0'),dot1=$('#dot1'),prev=$('#prev'),next=$('#next');
+  const idx=()=>Math.round(el.scrollLeft/el.clientWidth);
+  const sync=()=>{const i=idx();dot0.classList.toggle('active',i===0);dot1.classList.toggle('active',i===1)};
+  prev.addEventListener('click',()=>el.scrollTo({left:0,behavior:'smooth'}));
+  next.addEventListener('click',()=>el.scrollTo({left:el.clientWidth,behavior:'smooth'}));
+  el.addEventListener('scroll',()=>requestAnimationFrame(sync));})();
 
 /* ===== Daten füllen ===== */
-function fillDates(){
-  const now = new Date();
-  const tmr = new Date(now); tmr.setDate(now.getDate()+1);
-  $('#date-today').textContent = now.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit'});
-  $('#date-tomorrow').textContent = tmr.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit'});
-}
+function fillDates(){const now=new Date(),tmr=new Date(now);tmr.setDate(now.getDate()+1);
+  $('#date-today').textContent=now.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'});
+  $('#date-tomorrow').textContent=tmr.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'});}
 
-/* ===== Nur-Tages-Termine ladefunktion (ohne Fallback-iframe) ===== */
+/* ===== Tages-Termine (heute/morgen, ohne Fallback) ===== */
 async function loadDayEvents(listEl,statusEl,calId,iso){
-  try{
-    statusEl.textContent='Lade Termine…';
+  try{statusEl.textContent='Lade Termine…';
     const res=await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calId)}&from=${iso}T00:00:00&to=${iso}T23:59:59`);
     if(!res.ok) throw new Error(res.status);
     const data=await res.json(); listEl.innerHTML='';
-    if(Array.isArray(data) && data.length){
+    if(Array.isArray(data)&&data.length){
       data.sort((a,b)=>new Date(a.start)-new Date(b.start));
-      data.forEach(ev=>{
-        const li=document.createElement('li'); li.className='event';
-        const t=ev.allDay?'Ganztägig':`${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`;
-        li.textContent=`${t} · ${ev.summary||''}`; listEl.appendChild(li);
-      });
+      for(const ev of data){const li=document.createElement('li');li.className='event';
+        const t=ev.allDay?'Ganztägig':`${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`; li.textContent=`${t} · ${ev.summary||''}`; listEl.appendChild(li);} 
       statusEl.textContent='';
-    } else {
-      statusEl.textContent='Keine Termine.';
-    }
-  }catch(e){
-    statusEl.textContent='Fehler beim Laden.';
-  }
+    } else {statusEl.textContent='Keine Termine.'}
+  }catch{statusEl.textContent='Fehler beim Laden.'}
 }
 
-/* ===== Demo: Stundenpläne ===== */
+/* ===== Demo-Stundenpläne / Fix-Plan ===== */
 function renderStundenplaene(){
   $('#stundenplan-heute').innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
   <tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
   <tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
-
   $('#stundenplan-morgen').innerHTML=`<tr><td>08:00–08:45</td><td class="fach-deutsch">Deutsch</td><td>101</td></tr>
   <tr><td>09:00–09:45</td><td class="fach-mathe">Mathematik</td><td>204</td></tr>
   <tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
 }
-
-/* ===== Fixer Stundenplan ===== */
 function renderFixedPlan(){
-  const fixedData=[
-    {time:'08:00–08:45', mo:'Mathe', moCls:'fach-mathe', di:'Deutsch', diCls:'fach-deutsch', mi:'Englisch', miCls:'fach-englisch', do:'Mathe', doCls:'fach-mathe', fr:'Musik', frCls:'fach-musik'},
-    {time:'09:00–09:45', mo:'Englisch', moCls:'fach-englisch', di:'Musik', diCls:'fach-musik', mi:'Deutsch', miCls:'fach-deutsch', do:'Kunst', doCls:'fach-kunst', fr:'Mathe', frCls:'fach-mathe'}
-  ];
-  const rows = fixedData.map(r=>`<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td><td class="${r.diCls}">${r.di}</td><td class="${r.miCls}">${r.mi}</td><td class="${r.doCls}">${r.do}</td><td class="${r.frCls}">${r.fr}</td></tr>`).join('');
-  $('#stundenplan-fix').innerHTML = rows;
+  const rows=[
+    {time:'08:00–08:45',mo:'Mathe',moCls:'fach-mathe',di:'Deutsch',diCls:'fach-deutsch',mi:'Englisch',miCls:'fach-englisch',do:'Mathe',doCls:'fach-mathe',fr:'Musik',frCls:'fach-musik'},
+    {time:'09:00–09:45',mo:'Englisch',moCls:'fach-englisch',di:'Musik',diCls:'fach-musik',mi:'Deutsch',miCls:'fach-deutsch',do:'Kunst',doCls:'fach-kunst',fr:'Mathe',frCls:'fach-mathe'}
+  ].map(r=>`<tr><td>${r.time}</td><td class="${r.moCls}">${r.mo}</td><td class="${r.diCls}">${r.di}</td><td class="${r.miCls}">${r.mi}</td><td class="${r.doCls}">${r.do}</td><td class="${r.frCls}">${r.fr}</td></tr>`).join('');
+  $('#stundenplan-fix').innerHTML=rows;
 }
 
 /* ===== Smart Home ===== */
 function renderSmartHome(){
-  const widgets=$('#widgets');
-  APPS.forEach(app=>{
-    const div=document.createElement('div'); div.className='tile';
-    div.innerHTML=`<h4>${app.title}</h4>`; const row=document.createElement('div'); row.className='btnrow';
-    const btn=document.createElement('a'); btn.className='btn'; btn.textContent=app.label; btn.href=app.intent; btn.target='_self'; btn.rel='noopener';
-    btn.addEventListener('click', (ev)=>{ try{ if(window.fully && typeof fully.startApplication==='function'){ fully.startApplication(app.pkg); ev.preventDefault(); } }catch(e){} });
-    row.appendChild(btn); div.appendChild(row); widgets.appendChild(div);
-  });
-}
+  const wrap=$('#widgets');
+  for(const app of APPS){const tile=document.createElement('div');tile.className='tile';
+    tile.innerHTML=`<h4>${app.title}</h4>`;const row=document.createElement('div');row.className='btnrow';
+    const btn=document.createElement('a');btn.className='btn';btn.textContent=app.label;btn.href=app.intent;btn.target='_self';btn.rel='noopener';
+    btn.addEventListener('click',ev=>{try{if(window.fully&&typeof fully.startApplication==='function'){fully.startApplication(app.pkg);ev.preventDefault();}}catch{}});
+    row.appendChild(btn);tile.appendChild(row);wrap.appendChild(tile);} }
 
 /* ===== Modals ===== */
 function wireModals(){
-  // Fixed plan
-  const fixedModal=$('#fixedModal'), fixedThumb=$('#fixedThumb'), closeFixed=$('#closeModal');
-  const toggleFixed=()=> fixedModal.classList.toggle('open');
-  fixedThumb.addEventListener('click', toggleFixed); closeFixed.addEventListener('click', toggleFixed); fixedModal.addEventListener('click', e=>{ if(e.target===fixedModal) toggleFixed(); });
-  // Month
-  const monthModal=$('#monthModal'), monthThumb=$('#monthThumb'), closeMonth=$('#closeMonth');
-  const toggleMonth=()=> { monthModal.classList.toggle('open'); if(monthModal.classList.contains('open')) $('#monthFrame').src = buildGoogleEmbed(['mode=MONTH','src='+encodeURIComponent(CAL.GENERAL),'src='+encodeURIComponent(CAL.DIENST),'src='+encodeURIComponent(CAL.VALENTIN)]); };
-  monthThumb.addEventListener('click', toggleMonth); closeMonth.addEventListener('click', toggleMonth); monthModal.addEventListener('click', e=>{ if(e.target===monthModal) toggleMonth(); });
+  const fm=$('#fixedModal'), ft=$('#fixedThumb'), fx=$('#closeModal');
+  const mm=$('#monthModal'), mt=$('#monthThumb'), mx=$('#closeMonth');
+  const toggleF=()=>fm.classList.toggle('open');
+  const toggleM=()=>{mm.classList.toggle('open'); if(mm.classList.contains('open')) $('#monthFrame').src=buildEmbed(['mode=MONTH','src='+encodeURIComponent(CAL.GENERAL),'src='+encodeURIComponent(CAL.DIENST),'src='+encodeURIComponent(CAL.VALENTIN)])};
+  ft.addEventListener('click',toggleF); fx.addEventListener('click',toggleF); fm.addEventListener('click',e=>{if(e.target===fm)toggleF()});
+  mt.addEventListener('click',toggleM); mx.addEventListener('click',toggleM); mm.addEventListener('click',e=>{if(e.target===mm)toggleM()});
 }
 
-/* ===== Heute/Morgen laden (ohne Fallback) ===== */
+/* ===== Heute/Morgen laden ===== */
 function refreshDays(){
-  const now = new Date(); const TODAY_ISO = isoDate(now);
-  const tmr = new Date(now); tmr.setDate(now.getDate()+1); const TOMORROW_ISO = isoDate(tmr);
-  loadDayEvents($('#valentin-today-list'), $('#valentin-today-status'), CAL.VALENTIN, TODAY_ISO);
-  loadDayEvents($('#valentin-tomorrow-list'), $('#valentin-tomorrow-status'), CAL.VALENTIN, TOMORROW_ISO);
+  const now=new Date(), tmr=new Date(now); tmr.setDate(now.getDate()+1);
+  loadDayEvents($('#valentin-today-list'),$('#valentin-today-status'),CAL.VALENTIN,isoDate(now));
+  loadDayEvents($('#valentin-tomorrow-list'),$('#valentin-tomorrow-status'),CAL.VALENTIN,isoDate(tmr));
 }
 
 /* ===== Init ===== */
 (function init(){
-  try{
-    setDiag('Init…');
-    // Dots sync (after first paint)
-    const el = $('#carousel'); const dot0=$('#dot0'), dot1=$('#dot1');
-    const sync=()=>{ const i=Math.round(el.scrollLeft/el.clientWidth); dot0.classList.toggle('active', i===0); dot1.classList.toggle('active', i===1); };
-    el.addEventListener('scroll', ()=>requestAnimationFrame(sync));
-
-    fillDates();
-    renderStundenplaene();
-    renderFixedPlan();
-    renderSmartHome();
-    wireModals();
-    refreshDays();
-
-    setDiag('Bereit');
-  }catch(e){ setDiag('Fehler: '+e.message); }
+  fillDates(); renderStundenplaene(); renderFixedPlan(); renderSmartHome(); wireModals(); refreshDays();
 })();
 
-// Auto-Reload alle 5 Minuten
-setInterval(()=>{ try{ refreshDays(); }catch(e){} }, 5*60*1000);
+// Auto-Refresh
+setInterval(()=>{try{refreshDays()}catch{}},5*60*1000);
 </script>
 </body>
 </html>
