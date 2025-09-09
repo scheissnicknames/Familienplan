@@ -22,7 +22,6 @@
     /* Card-Stack / Swipe */
     .carousel{position:relative;flex:1;overflow:auto;scroll-snap-type:x mandatory;display:flex;gap:12px;padding-bottom:2px}
     .slide{scroll-snap-align:center;flex:0 0 100%;height:100%;}
-
     .card{height:100%;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
       border:1px solid var(--border);border-radius:18px;padding:14px;display:grid;grid-template-rows:auto 1fr;gap:10px}
 
@@ -117,7 +116,6 @@
               <div class="inner">
                 <ul class="events" id="valentin-today-list"></ul>
                 <div class="status" id="valentin-today-status"></div>
-                <div id="valentin-today-fallback" style="display:none;margin-top:8px"><iframe id="valentin-today" height="220"></iframe></div>
               </div>
             </div>
           </div>
@@ -140,7 +138,6 @@
               <div class="inner">
                 <ul class="events" id="valentin-tomorrow-list"></ul>
                 <div class="status" id="valentin-tomorrow-status"></div>
-                <div id="valentin-tomorrow-fallback" style="display:none;margin-top:8px"><iframe id="valentin-tomorrow" height="220"></iframe></div>
               </div>
             </div>
           </div>
@@ -226,12 +223,6 @@ function buildGoogleEmbed(params){
   const common=['ctz=Europe/Berlin','showTitle=0','showPrint=0','showCalendars=0','showTz=0','wkst=2'];
   return base+[...common,...params].join('&');
 }
-function googleAgendaDay(calId, ymdStr){
-  const y=+ymdStr.slice(0,4), m=+ymdStr.slice(4,6)-1, d=+ymdStr.slice(6,8);
-  const start=new Date(y,m,d); const end=new Date(start); end.setDate(start.getDate()+1);
-  const endYMD = ymd(end);
-  return buildGoogleEmbed(['mode=AGENDA', `dates=${ymdStr}/${endYMD}`, 'src='+encodeURIComponent(calId)]);
-}
 
 /* ===== Swipe Controls ===== */
 (function swipeInit(){
@@ -252,7 +243,8 @@ function fillDates(){
   $('#date-tomorrow').textContent = tmr.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit'});
 }
 
-async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,iso,ymdStr){
+/* ===== Nur-Tages-Termine ladefunktion (ohne Fallback-iframe) ===== */
+async function loadDayEvents(listEl,statusEl,calId,iso){
   try{
     statusEl.textContent='Lade Termine…';
     const res=await fetch(`${APPS_SCRIPT_URL}?cal=${encodeURIComponent(calId)}&from=${iso}T00:00:00&to=${iso}T23:59:59`);
@@ -265,19 +257,17 @@ async function loadDayEvents(listEl,statusEl,fallbackBox,fallbackIframe,calId,is
         const t=ev.allDay?'Ganztägig':`${toTimeStr(ev.start)}–${toTimeStr(ev.end)}`;
         li.textContent=`${t} · ${ev.summary||''}`; listEl.appendChild(li);
       });
-      statusEl.textContent=''; if(fallbackBox) fallbackBox.style.display='none';
+      statusEl.textContent='';
     } else {
       statusEl.textContent='Keine Termine.';
-      if(fallbackBox && fallbackIframe){ fallbackIframe.src = googleAgendaDay(calId, ymdStr); fallbackBox.style.display='block'; }
     }
   }catch(e){
     statusEl.textContent='Fehler beim Laden.';
-    if(fallbackBox && fallbackIframe){ fallbackIframe.src = googleAgendaDay(calId, ymdStr); fallbackBox.style.display='block'; }
   }
 }
 
+/* ===== Demo: Stundenpläne ===== */
 function renderStundenplaene(){
-  // Demo – bitte mit echten Daten ersetzen, sobald vorhanden
   $('#stundenplan-heute').innerHTML=`<tr><td>08:00–08:45</td><td class="fach-mathe">Mathematik</td><td>101</td></tr>
   <tr><td>09:00–09:45</td><td class="fach-englisch">Englisch</td><td>204</td></tr>
   <tr><td>10:00–10:45</td><td class="fach-deutsch">Deutsch</td><td>112</td></tr>`;
@@ -287,6 +277,7 @@ function renderStundenplaene(){
   <tr><td>10:00–10:45</td><td class="fach-musik">Musik</td><td>Saal</td></tr>`;
 }
 
+/* ===== Fixer Stundenplan ===== */
 function renderFixedPlan(){
   const fixedData=[
     {time:'08:00–08:45', mo:'Mathe', moCls:'fach-mathe', di:'Deutsch', diCls:'fach-deutsch', mi:'Englisch', miCls:'fach-englisch', do:'Mathe', doCls:'fach-mathe', fr:'Musik', frCls:'fach-musik'},
@@ -296,6 +287,7 @@ function renderFixedPlan(){
   $('#stundenplan-fix').innerHTML = rows;
 }
 
+/* ===== Smart Home ===== */
 function renderSmartHome(){
   const widgets=$('#widgets');
   APPS.forEach(app=>{
@@ -307,6 +299,7 @@ function renderSmartHome(){
   });
 }
 
+/* ===== Modals ===== */
 function wireModals(){
   // Fixed plan
   const fixedModal=$('#fixedModal'), fixedThumb=$('#fixedThumb'), closeFixed=$('#closeModal');
@@ -318,25 +311,30 @@ function wireModals(){
   monthThumb.addEventListener('click', toggleMonth); closeMonth.addEventListener('click', toggleMonth); monthModal.addEventListener('click', e=>{ if(e.target===monthModal) toggleMonth(); });
 }
 
+/* ===== Heute/Morgen laden (ohne Fallback) ===== */
 function refreshDays(){
-  const now = new Date(); const TODAY_ISO = isoDate(now), TODAY_YMD = ymd(now);
-  const tmr = new Date(now); tmr.setDate(now.getDate()+1); const TOMORROW_ISO = isoDate(tmr), TOMORROW_YMD = ymd(tmr);
-  const fboxT=$('#valentin-today-fallback'), fibT=$('#valentin-today'); if(fibT){ fibT.src = googleAgendaDay(CAL.VALENTIN, TODAY_YMD); if(fboxT) fboxT.style.display='block'; }
-  const fboxM=$('#valentin-tomorrow-fallback'), fibM=$('#valentin-tomorrow'); if(fibM){ fibM.src = googleAgendaDay(CAL.VALENTIN, TOMORROW_YMD); if(fboxM) fboxM.style.display='block'; }
-  loadDayEvents($('#valentin-today-list'), $('#valentin-today-status'), fboxT, fibT, CAL.VALENTIN, TODAY_ISO, TODAY_YMD);
-  loadDayEvents($('#valentin-tomorrow-list'), $('#valentin-tomorrow-status'), fboxM, fibM, CAL.VALENTIN, TOMORROW_ISO, TOMORROW_YMD);
+  const now = new Date(); const TODAY_ISO = isoDate(now);
+  const tmr = new Date(now); tmr.setDate(now.getDate()+1); const TOMORROW_ISO = isoDate(tmr);
+  loadDayEvents($('#valentin-today-list'), $('#valentin-today-status'), CAL.VALENTIN, TODAY_ISO);
+  loadDayEvents($('#valentin-tomorrow-list'), $('#valentin-tomorrow-status'), CAL.VALENTIN, TOMORROW_ISO);
 }
 
-// Init
+/* ===== Init ===== */
 (function init(){
   try{
     setDiag('Init…');
+    // Dots sync (after first paint)
+    const el = $('#carousel'); const dot0=$('#dot0'), dot1=$('#dot1');
+    const sync=()=>{ const i=Math.round(el.scrollLeft/el.clientWidth); dot0.classList.toggle('active', i===0); dot1.classList.toggle('active', i===1); };
+    el.addEventListener('scroll', ()=>requestAnimationFrame(sync));
+
     fillDates();
     renderStundenplaene();
     renderFixedPlan();
     renderSmartHome();
     wireModals();
     refreshDays();
+
     setDiag('Bereit');
   }catch(e){ setDiag('Fehler: '+e.message); }
 })();
